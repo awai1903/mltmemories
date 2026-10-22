@@ -56,3 +56,43 @@
 .gold-border-focus {
   border-color: rgba(200, 164, 93, 0.7);
 }
+
+/* Subtle Golden Lens Flare Effect for Memory Wall Tiles */
+.lens-flare-sheen {
+  background: linear-gradient(
+    108deg,
+    transparent 20%,
+    rgba(200, 164, 93, 0.03) 38%,
+    rgba(231, 211, 155, 0.32) 48%,
+    rgba(255, 250, 235, 0.65) 50%,
+    rgba(200, 164, 93, 0.32) 52%,
+    rgba(200, 164, 93, 0.03) 62%,
+    transparent 80%
+  );
+  transform: translateX(-160%) skewX(-20deg);
+  transition: transform 900ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.group:hover .lens-flare-sheen {
+  transform: translateX(220%) skewX(-20deg);
+}
+
+/* Anamorphic Golden Light Streak */
+.lens-flare-anamorphic {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(200, 164, 93, 0.1) 20%,
+    rgba(231, 211, 155, 0.8) 50%,
+    rgba(255, 255, 255, 0.95) 52%,
+    rgba(231, 211, 155, 0.8) 54%,
+    rgba(200, 164, 93, 0.1) 80%,
+    transparent 100%
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lens-flare-sheen {
+    display: none;
+  }
+}

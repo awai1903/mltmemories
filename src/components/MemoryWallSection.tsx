@@ -229,9 +229,14 @@ export const MemoryWallSection: React.FC = () => {
             <div
               key={mem.id}
               onClick={() => setSelectedMemory(mem)}
-              className="group relative bg-[#0B1530] border border-[#C8A45D]/30 hover:border-[#C8A45D] rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl cursor-pointer flex flex-col justify-between"
+              className="group relative bg-[#0B1530] border border-[#C8A45D]/30 hover:border-[#C8A45D] rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_0_30px_rgba(200,164,93,0.25)] cursor-pointer flex flex-col justify-between"
             >
-              {/* Photo Area */}
+              {/* Subtle Golden Lens Flare Sweeping Sheen */}
+              <div className="pointer-events-none absolute inset-0 z-30 overflow-hidden rounded-2xl">
+                <div className="lens-flare-sheen absolute inset-0 w-[200%] h-full" />
+              </div>
+
+              {/* Photo Area with Anamorphic Lens Flare */}
               <div className="relative aspect-[16/10] w-full bg-[#070D1C] overflow-hidden flex items-center justify-center border-b border-[#C8A45D]/20">
                 {mem.imageUrl ? (
                   <img
@@ -253,15 +258,25 @@ export const MemoryWallSection: React.FC = () => {
                   </div>
                 )}
 
+                {/* Golden Lens Flare Optical Glint & Anamorphic Streak */}
+                <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
+                  {/* Soft Radial Gold Flare Bloom */}
+                  <div className="w-24 h-24 rounded-full bg-radial from-[#FFE9B3]/35 via-[#C8A45D]/15 to-transparent blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  {/* Anamorphic Horizontal Golden Ray */}
+                  <div className="absolute left-0 right-0 h-[1.5px] lens-flare-anamorphic scale-x-0 group-hover:scale-x-100 opacity-0 group-hover:opacity-90 transition-all duration-700 ease-out" />
+                  {/* Core Star Glint */}
+                  <div className="w-2 h-2 rounded-full bg-white shadow-[0_0_12px_#FFE9B3] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </div>
+
                 {/* Category Pill Tag */}
-                <div className="absolute top-3 left-3 px-2 py-0.5 rounded text-[10px] font-mono uppercase bg-[#070D1C]/90 text-[#C8A45D] border border-[#C8A45D]/30">
+                <div className="absolute top-3 left-3 z-20 px-2 py-0.5 rounded text-[10px] font-mono uppercase bg-[#070D1C]/90 text-[#C8A45D] border border-[#C8A45D]/30 backdrop-blur-sm">
                   {mem.category}
                 </div>
 
                 {/* Like Button */}
                 <button
                   onClick={(e) => handleLike(e, mem.id)}
-                  className="absolute top-3 right-3 px-2 py-1 rounded-full bg-[#070D1C]/90 text-[#E7D39B] hover:text-red-400 border border-[#C8A45D]/30 flex items-center gap-1 text-xs cursor-pointer focus:outline-none transition-colors"
+                  className="absolute top-3 right-3 z-20 px-2 py-1 rounded-full bg-[#070D1C]/90 text-[#E7D39B] hover:text-red-400 border border-[#C8A45D]/30 flex items-center gap-1 text-xs cursor-pointer focus:outline-none transition-colors backdrop-blur-sm"
                   title="Applaud memory"
                 >
                   <Heart className="w-3.5 h-3.5 fill-current text-red-400/80" />
@@ -269,8 +284,8 @@ export const MemoryWallSection: React.FC = () => {
                 </button>
 
                 {/* Expand overlay hint on hover */}
-                <div className="absolute inset-0 bg-[#070D1C]/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-                  <span className="px-3 py-1.5 rounded-lg bg-[#0B1530]/90 border border-[#C8A45D] text-xs font-semibold text-[#E7D39B] flex items-center gap-1.5">
+                <div className="absolute inset-0 z-20 bg-[#070D1C]/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                  <span className="px-3 py-1.5 rounded-lg bg-[#0B1530]/90 border border-[#C8A45D] text-xs font-semibold text-[#E7D39B] flex items-center gap-1.5 shadow-lg">
                     <Maximize2 className="w-3.5 h-3.5" />
                     <span>View Memory Story</span>
                   </span>
