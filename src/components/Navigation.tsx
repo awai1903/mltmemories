@@ -40,15 +40,22 @@ export const Navigation: React.FC<NavigationProps> = ({ onExploreClick }) => {
     },
   ];
 
+  const scrollToTop = (e: React.MouseEvent) => {
+    e.preventDefault();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setMobileMenuOpen(false);
+  };
+
   return (
     <header className="sticky top-0 z-40 w-full bg-[var(--bg-primary)]/95 backdrop-blur-md border-b border-[var(--border-gold)] transition-colors duration-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-6 sm:gap-8">
-        {/* Zone 1: Brand Wordmark (Single Text Element) */}
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-3 sm:gap-8">
+        {/* Zone 1: Brand Wordmark */}
         <a
           href="#hero"
-          className="group flex items-center gap-3 text-lg sm:text-xl font-cinzel font-bold tracking-wider text-[#F8F5EE] whitespace-nowrap shrink-0 hover:text-[var(--accent-champagne)] transition-colors"
+          onClick={scrollToTop}
+          className="group flex items-center gap-2.5 sm:gap-3 text-base sm:text-xl font-cinzel font-bold tracking-wider text-[#F8F5EE] whitespace-nowrap shrink-0 hover:text-[var(--accent-champagne)] transition-colors cursor-pointer"
         >
-          <div className="w-8 h-8 rounded-full border border-[var(--accent-gold)]/60 bg-[var(--bg-secondary)] flex items-center justify-center text-xs font-serif text-[var(--accent-gold)] group-hover:scale-105 transition-transform shadow-inner">
+          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-[var(--accent-gold)]/60 bg-[var(--bg-secondary)] flex items-center justify-center text-[10px] sm:text-xs font-serif text-[var(--accent-gold)] group-hover:scale-105 transition-transform shadow-inner">
             MUST
           </div>
           <span>MUST · BS MLT BOYS</span>
@@ -144,7 +151,13 @@ export const Navigation: React.FC<NavigationProps> = ({ onExploreClick }) => {
               <a
                 key={link.label}
                 href={link.href}
-                onClick={() => setMobileMenuOpen(false)}
+                onClick={(e) => {
+                  if (link.href === '#hero') {
+                    scrollToTop(e);
+                  } else {
+                    setMobileMenuOpen(false);
+                  }
+                }}
                 className="py-1.5 border-b border-[var(--border-gold)]/20 hover:text-white transition-colors"
               >
                 {link.label}
