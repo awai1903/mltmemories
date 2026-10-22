@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronDown, Compass, ShieldCheck, Maximize2, X, Users } from 'lucide-react';
+import heroCampusNightImg from '../assets/images/hero_campus_night_1792668356137.jpg';
 
 interface HeroProps {
   onScrollToExplore: () => void;
@@ -18,9 +19,13 @@ export const Hero: React.FC<HeroProps> = ({ onScrollToExplore }) => {
       {/* Background Cinematic University Campus at Night with Deep Blue Space Overlay */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
         <img
-          src="/src/assets/images/hero_campus_night_1792668356137.jpg"
+          src={heroCampusNightImg}
           alt="MUST University campus illuminated under the night sky"
-          referrerPolicy="no-referrer"
+          loading="eager"
+          decoding="async"
+          onError={(e) => {
+            (e.currentTarget as HTMLImageElement).src = '/assets/images/hero_campus_night_1792668356137.jpg';
+          }}
           className="w-full h-full object-cover object-center opacity-35 scale-105"
         />
         {/* Deep Blue Space Vignette and Ambient Gradient Overlay */}

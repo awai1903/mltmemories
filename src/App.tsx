@@ -18,13 +18,24 @@ import { StudentModal } from './components/StudentModal';
 import { Countdown2027 } from './components/Countdown2027';
 import { FarewellWall } from './components/FarewellWall';
 import { ThemeProvider } from './context/ThemeContext';
-import { Student } from './data/students';
+import { Student, BATCH_STUDENTS } from './data/students';
 
 function AppContent() {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   useEffect(() => {
+    // Preload all student photos and assets immediately into browser cache
+    const urlsToPreload = [
+      '/group-photo.jpg',
+      '/logo.png',
+      ...BATCH_STUDENTS.map((s) => s.photoUrl),
+    ];
+    urlsToPreload.forEach((url) => {
+      const img = new Image();
+      img.src = url;
+    });
+
     const checkScroll = () => {
       setShowScrollTop(window.scrollY > 350);
     };

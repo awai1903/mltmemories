@@ -25,29 +25,39 @@ interface LegacyBookletProps {
 
 export const LegacyBooklet: React.FC<LegacyBookletProps> = ({ onSelectStudent }) => {
   const totalSpreads = 8;
+  const totalMobilePages = 14; // 0 (Cover), 1-12 (Students), 13 (Epilogue)
+
   const [currentSpread, setCurrentSpread] = useState<number>(0);
   const [mobilePage, setMobilePage] = useState<number>(0);
   const [tocOpen, setTocOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
 
-  // Flip animation states
-  // 'next': flipping from currentSpread to currentSpread + 1
-  // 'prev': flipping from currentSpread to currentSpread - 1
+  // Desktop flip state
   const [flipState, setFlipState] = useState<{
     direction: 'next' | 'prev';
     fromSpread: number;
     toSpread: number;
   } | null>(null);
 
+  // Mobile flip state for authentic 3D single-page book turns
+  const [mobileFlipState, setMobileFlipState] = useState<{
+    direction: 'next' | 'prev';
+    fromPage: number;
+    toPage: number;
+  } | null>(null);
+
   const bookletRef = useRef<HTMLDivElement>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
+  const touchStartXRef = useRef<number | null>(null);
 
   // Web Audio synthetic soft paper rustle sound
   const playPageTurnSound = () => {
     if (!soundEnabled) return;
     try {
-      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const AudioCtx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       if (!AudioCtx) return;
       if (!audioContextRef.current) {
         audioContextRef.current = new AudioCtx();
@@ -62,7 +72,6 @@ export const LegacyBooklet: React.FC<LegacyBookletProps> = ({ onSelectStudent })
       const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
       const data = buffer.getChannelData(0);
       for (let i = 0; i < bufferSize; i++) {
-        // pink-ish noise decay
         const progress = i / bufferSize;
         const envelope = Math.sin(progress * Math.PI) * (1 - progress * 0.5);
         data[i] = (Math.random() * 2 - 1) * envelope * 0.12;
@@ -71,7 +80,6 @@ export const LegacyBooklet: React.FC<LegacyBookletProps> = ({ onSelectStudent })
       const noise = ctx.createBufferSource();
       noise.buffer = buffer;
 
-      // Bandpass filter to emulate real paper sheet frequency
       const filter = ctx.createBiquadFilter();
       filter.type = 'bandpass';
       filter.frequency.setValueAtTime(1400, ctx.currentTime);
@@ -87,7 +95,7 @@ export const LegacyBooklet: React.FC<LegacyBookletProps> = ({ onSelectStudent })
 
       noise.start();
     } catch {
-      // Audio not supported or autoplay blocked
+      // Audio autoplay blocked or unsupported
     }
   };
 
@@ -102,52 +110,111 @@ export const LegacyBooklet: React.FC<LegacyBookletProps> = ({ onSelectStudent })
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentSpread, flipState, mobilePage]);
+  }, [currentSpread, flipState, mobilePage, mobileFlipState]);
 
   const handleNext = () => {
-    if (flipState) return;
-    if (currentSpread >= totalSpreads - 1 && mobilePage >= 13) return;
+    if (flipState || mobileFlipState) return;
 
-    playPageTurnSound();
+    // Check bounds
+    const isMobile = window.innerWidth < 640;
+    if (isMobile) {
+      if (mobilePage >= totalMobilePages - 1) return;
+      playPageTurnSound();
+      const nextPage = mobilePage + 1;
+      setMobileFlipState({
+        direction: 'next',
+        fromPage: mobilePage,
+        toPage: nextPage,
+      });
 
-    const nextSpread = Math.min(currentSpread + 1, totalSpreads - 1);
-    setFlipState({
-      direction: 'next',
-      fromSpread: currentSpread,
-      toSpread: nextSpread,
-    });
+      // Synchronize spread
+      const synchedSpread = Math.min(Math.floor((nextPage + 1) / 2), totalSpreads - 1);
+      setCurrentSpread(synchedSpread);
 
-    setMobilePage((prev) => Math.min(prev + 1, 13));
+      setTimeout(() => {
+        setMobilePage(nextPage);
+        setMobileFlipState(null);
+      }, 650);
+    } else {
+      if (currentSpread >= totalSpreads - 1) return;
+      playPageTurnSound();
+      const nextSpread = currentSpread + 1;
+      setFlipState({
+        direction: 'next',
+        fromSpread: currentSpread,
+        toSpread: nextSpread,
+      });
 
-    setTimeout(() => {
-      setCurrentSpread(nextSpread);
-      setFlipState(null);
-    }, 650);
+      // Synchronize mobile page
+      setMobilePage(Math.min(nextSpread * 2, totalMobilePages - 1));
+
+      setTimeout(() => {
+        setCurrentSpread(nextSpread);
+        setFlipState(null);
+      }, 650);
+    }
   };
 
   const handlePrev = () => {
-    if (flipState) return;
-    if (currentSpread <= 0 && mobilePage <= 0) return;
+    if (flipState || mobileFlipState) return;
 
-    playPageTurnSound();
+    const isMobile = window.innerWidth < 640;
+    if (isMobile) {
+      if (mobilePage <= 0) return;
+      playPageTurnSound();
+      const prevPage = mobilePage - 1;
+      setMobileFlipState({
+        direction: 'prev',
+        fromPage: mobilePage,
+        toPage: prevPage,
+      });
 
-    const prevSpread = Math.max(currentSpread - 1, 0);
-    setFlipState({
-      direction: 'prev',
-      fromSpread: currentSpread,
-      toSpread: prevSpread,
-    });
+      const synchedSpread = Math.max(Math.floor((prevPage + 1) / 2), 0);
+      setCurrentSpread(synchedSpread);
 
-    setMobilePage((prev) => Math.max(prev - 1, 0));
+      setTimeout(() => {
+        setMobilePage(prevPage);
+        setMobileFlipState(null);
+      }, 650);
+    } else {
+      if (currentSpread <= 0) return;
+      playPageTurnSound();
+      const prevSpread = currentSpread - 1;
+      setFlipState({
+        direction: 'prev',
+        fromSpread: currentSpread,
+        toSpread: prevSpread,
+      });
 
-    setTimeout(() => {
-      setCurrentSpread(prevSpread);
-      setFlipState(null);
-    }, 650);
+      setMobilePage(Math.max(prevSpread * 2 - 1, 0));
+
+      setTimeout(() => {
+        setCurrentSpread(prevSpread);
+        setFlipState(null);
+      }, 650);
+    }
+  };
+
+  // Touch gesture handlers for mobile page swipe
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartXRef.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartXRef.current === null) return;
+    const diff = touchStartXRef.current - e.changedTouches[0].clientX;
+    touchStartXRef.current = null;
+    if (diff > 45) {
+      // Swiped left -> next page
+      handleNext();
+    } else if (diff < -45) {
+      // Swiped right -> prev page
+      handlePrev();
+    }
   };
 
   const jumpToStudent = (index: number) => {
-    if (flipState) return;
+    if (flipState || mobileFlipState) return;
     playPageTurnSound();
     const targetSpread = Math.floor(index / 2) + 1;
     setCurrentSpread(targetSpread);
@@ -170,81 +237,91 @@ export const LegacyBooklet: React.FC<LegacyBookletProps> = ({ onSelectStudent })
     }
   };
 
-  // Helper to render a student profile page inside the book
+  // Student Profile Page renderer with lifted DP and distinct Roll Number pill badge
   const renderStudentPage = (student: Student, pageNumber: number, isRightPage: boolean) => (
     <div
-      className={`h-full w-full flex flex-col justify-between p-5 sm:p-7 md:p-8 bg-[#FBF8F1] text-[#0A1124] relative overflow-hidden select-text ${
-        isRightPage ? 'border-l border-[#8C6D2D]/20 shadow-[inset_12px_0_20px_-8px_rgba(0,0,0,0.12)]' : 'shadow-[inset_-12px_0_20px_-8px_rgba(0,0,0,0.12)]'
+      className={`h-full w-full flex flex-col justify-between p-4 sm:p-7 md:p-8 bg-[#FBF8F1] text-[#0A1124] relative overflow-hidden select-text ${
+        isRightPage
+          ? 'border-l border-[#8C6D2D]/20 shadow-[inset_12px_0_20px_-8px_rgba(0,0,0,0.12)]'
+          : 'shadow-[inset_-12px_0_20px_-8px_rgba(0,0,0,0.12)]'
       }`}
     >
       {/* Subtle Archival Laid Paper Texture and Vintage Corner Ornaments */}
       <div className="absolute inset-0 bg-radial from-transparent via-[#F4EDE0]/40 to-[#EAE0CA]/60 pointer-events-none" />
-      <div className="absolute top-3 left-3 text-[10px] text-[#C8A45D]/70 font-cinzel select-none">✦</div>
-      <div className="absolute top-3 right-3 text-[10px] text-[#C8A45D]/70 font-cinzel select-none">✦</div>
-      <div className="absolute bottom-3 left-3 text-[10px] text-[#C8A45D]/70 font-cinzel select-none">✦</div>
-      <div className="absolute bottom-3 right-3 text-[10px] text-[#C8A45D]/70 font-cinzel select-none">✦</div>
+      <div className="absolute top-2.5 left-2.5 text-[9px] sm:text-[10px] text-[#C8A45D]/70 font-cinzel select-none">✦</div>
+      <div className="absolute top-2.5 right-2.5 text-[9px] sm:text-[10px] text-[#C8A45D]/70 font-cinzel select-none">✦</div>
+      <div className="absolute bottom-2.5 left-2.5 text-[9px] sm:text-[10px] text-[#C8A45D]/70 font-cinzel select-none">✦</div>
+      <div className="absolute bottom-2.5 right-2.5 text-[9px] sm:text-[10px] text-[#C8A45D]/70 font-cinzel select-none">✦</div>
 
       {/* Page Header */}
-      <div className="relative z-10 flex items-center justify-between pb-2.5 border-b border-[#C8A45D]/30">
+      <div className="relative z-10 flex items-center justify-between pb-2 border-b border-[#C8A45D]/30">
         <span className="text-[9px] sm:text-[10px] uppercase tracking-widest font-cinzel font-semibold text-[#8C6D2D]">
           MUST · BS MLT · CLASS OF 2027
         </span>
-        <span className="font-mono text-[11px] sm:text-xs text-[#8C6D2D] font-bold">
+        <span className="font-mono text-[10px] sm:text-xs text-[#8C6D2D] font-bold">
           PAGE {pageNumber}
         </span>
       </div>
 
       {/* Main Student Profile Body */}
-      <div className="relative z-10 my-auto py-2 sm:py-3 flex flex-col items-center text-center">
-        {/* Avatar with Gold Foil Bezel */}
-        <div className="relative mb-2.5 group">
-          <StudentAvatar student={student} size="lg" className="ring-4 ring-[#C8A45D]/50 shadow-xl" />
-          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded-full bg-[#07132c] text-[#F5E5B8] font-mono text-[10px] font-bold border border-[#C8A45D]/70 whitespace-nowrap shadow-md">
+      <div className="relative z-10 my-auto py-1 sm:py-2.5 flex flex-col items-center text-center">
+        {/* Avatar Spot with Gold Foil Bezel - Lifted up with distinct clearance */}
+        <div className="relative mt-0.5 sm:mt-1 mb-2.5 sm:mb-3 flex flex-col items-center group">
+          <StudentAvatar
+            student={student}
+            size="lg"
+            className="ring-4 ring-[#C8A45D]/60 shadow-xl group-hover:scale-105 transition-transform"
+          />
+          {/* Distinct, elevated Roll Number badge with clearance - never hidden by avatar or covering name */}
+          <div className="mt-2 px-3 py-0.5 rounded-full bg-[#07132c] text-[#F5E5B8] font-mono text-[10px] sm:text-[11px] font-bold border border-[#C8A45D]/80 whitespace-nowrap shadow-md">
             {student.rollNo}
           </div>
         </div>
 
         {/* Student Name & Nickname */}
-        <h3 className="text-lg sm:text-2xl font-cinzel font-bold text-[#0F1B38] tracking-tight mt-1">
+        <h3 className="text-base sm:text-2xl font-cinzel font-bold text-[#0F1B38] tracking-tight">
           {student.name}
         </h3>
-        <div className="text-xs font-editorial italic text-[#8C6D2D] font-semibold">
+        <div className="text-[11px] sm:text-xs font-editorial italic text-[#8C6D2D] font-semibold mt-0.5">
           "{student.nickname}" · {student.batchRole}
         </div>
 
         {/* Quote */}
-        <div className="relative my-2 sm:my-3 p-3 rounded-xl bg-white/80 border border-[#C8A45D]/30 max-w-sm shadow-sm">
-          <Quote className="w-3.5 h-3.5 text-[#C8A45D] mb-1 opacity-70" />
-          <p className="text-xs sm:text-sm font-editorial italic text-[#1D2A4D] leading-relaxed">
+        <div className="relative my-2 sm:my-2.5 p-2.5 sm:p-3 rounded-xl bg-white/80 border border-[#C8A45D]/30 max-w-sm shadow-sm">
+          <Quote className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-[#C8A45D] mb-0.5 opacity-70" />
+          <p className="text-[11px] sm:text-xs md:text-sm font-editorial italic text-[#1D2A4D] leading-relaxed">
             "{student.favoriteQuote}"
           </p>
         </div>
 
         {/* Lab Station & Specialty */}
-        <div className="w-full max-w-sm space-y-1 text-left text-xs bg-[#F2EBDA]/70 p-2.5 sm:p-3 rounded-lg border border-[#C8A45D]/25">
+        <div className="w-full max-w-sm space-y-0.5 sm:space-y-1 text-left text-xs bg-[#F2EBDA]/70 p-2 sm:p-2.5 rounded-lg border border-[#C8A45D]/25">
           <div className="flex items-center gap-1.5 text-[#0F1B38]">
             <Microscope className="w-3.5 h-3.5 text-[#8C6D2D] shrink-0" />
-            <span className="font-semibold text-xs sm:text-sm">{student.labStation}</span>
+            <span className="font-semibold text-[11px] sm:text-xs">{student.labStation}</span>
           </div>
-          <div className="text-[11px] text-[#334155] line-clamp-1">
+          <div className="text-[10px] sm:text-[11px] text-[#334155] line-clamp-1">
             <span className="font-semibold text-[#8C6D2D]">Focus:</span> {student.specialtyInterest}
           </div>
         </div>
 
         {/* Farewell 2027 Reflection snippet */}
-        <div className="mt-2 text-[11px] text-[#475569] font-editorial italic max-w-sm leading-relaxed line-clamp-2">
+        <div className="mt-1.5 text-[10px] sm:text-[11px] text-[#475569] font-editorial italic max-w-sm leading-relaxed line-clamp-2">
           "{student.farewellNote2027}"
         </div>
       </div>
 
       {/* Page Footer Action */}
-      <div className="relative z-10 pt-2.5 border-t border-[#C8A45D]/30 flex items-center justify-between">
-        <span className="text-[9px] sm:text-[10px] uppercase font-cinzel text-[#8C6D2D] truncate max-w-[150px]">
+      <div className="relative z-10 pt-2 border-t border-[#C8A45D]/30 flex items-center justify-between">
+        <span className="text-[8px] sm:text-[10px] uppercase font-cinzel text-[#8C6D2D] truncate max-w-[130px] sm:max-w-[160px]">
           {student.signatureTrait}
         </span>
         <button
-          onClick={() => onSelectStudent(student)}
-          className="px-2.5 sm:px-3 py-1 rounded bg-[#07132c] hover:bg-[#0c2256] text-[#F5E5B8] text-[10px] sm:text-[11px] font-semibold font-cinzel uppercase tracking-wider flex items-center gap-1 transition-colors cursor-pointer shadow-sm"
+          onClick={(e) => {
+            e.stopPropagation();
+            onSelectStudent(student);
+          }}
+          className="px-2.5 sm:px-3 py-1 rounded bg-[#07132c] hover:bg-[#0c2256] text-[#F5E5B8] text-[9px] sm:text-[11px] font-semibold font-cinzel uppercase tracking-wider flex items-center gap-1 transition-colors cursor-pointer shadow-sm"
         >
           <span>Full Record</span>
           <ExternalLink className="w-3 h-3" />
@@ -261,7 +338,7 @@ export const LegacyBooklet: React.FC<LegacyBookletProps> = ({ onSelectStudent })
           className="absolute bottom-0 right-0 w-8 h-8 cursor-pointer group/corner z-20"
           title="Click to flip to next page"
         >
-          <div className="absolute bottom-0 right-0 w-0 h-0 border-solid border-t-[20px] border-l-[20px] border-b-0 border-r-0 border-t-transparent border-l-[#C8A45D]/50 group-hover/corner:border-t-[26px] group-hover/corner:border-l-[26px] transition-all" />
+          <div className="absolute bottom-0 right-0 w-0 h-0 border-solid border-t-[18px] border-l-[18px] border-b-0 border-r-0 border-t-transparent border-l-[#C8A45D]/50 group-hover/corner:border-t-[24px] group-hover/corner:border-l-[24px] transition-all" />
         </div>
       )}
       {!isRightPage && (
@@ -273,18 +350,17 @@ export const LegacyBooklet: React.FC<LegacyBookletProps> = ({ onSelectStudent })
           className="absolute bottom-0 left-0 w-8 h-8 cursor-pointer group/corner z-20"
           title="Click to flip to previous page"
         >
-          <div className="absolute bottom-0 left-0 w-0 h-0 border-solid border-t-[20px] border-r-[20px] border-b-0 border-l-0 border-t-transparent border-r-[#C8A45D]/50 group-hover/corner:border-t-[26px] group-hover/corner:border-r-[26px] transition-all" />
+          <div className="absolute bottom-0 left-0 w-0 h-0 border-solid border-t-[18px] border-r-[18px] border-b-0 border-l-0 border-t-transparent border-r-[#C8A45D]/50 group-hover/corner:border-t-[24px] group-hover/corner:border-r-[24px] transition-all" />
         </div>
       )}
     </div>
   );
 
-  // Helper to render any page in a given spread
+  // Desktop Spread renderer (pages for left or right side)
   const renderSpreadPage = (spreadIndex: number, side: 'left' | 'right') => {
     // SPREAD 0
     if (spreadIndex === 0) {
       if (side === 'left') {
-        // Hardcover Title Frontispiece
         return (
           <div className="h-full w-full bg-gradient-to-br from-[#0c1b3d] via-[#07132c] to-[#040919] p-6 sm:p-8 md:p-10 flex flex-col items-center justify-between text-center relative border-r border-[#C8A45D]/20 shadow-[inset_-15px_0_25px_rgba(0,0,0,0.5)]">
             <div className="w-full flex items-center justify-between text-[10px] sm:text-[11px] font-cinzel text-[#C8A45D]">
@@ -319,7 +395,6 @@ export const LegacyBooklet: React.FC<LegacyBookletProps> = ({ onSelectStudent })
           </div>
         );
       } else {
-        // Prologue & Dedication
         return (
           <div className="h-full w-full bg-[#FBF8F1] p-6 sm:p-8 md:p-10 flex flex-col justify-between text-[#0A1124] relative shadow-[inset_15px_0_25px_rgba(0,0,0,0.12)]">
             <div className="flex items-center justify-between pb-3 border-b border-[#8C6D2D]/30">
@@ -445,27 +520,112 @@ export const LegacyBooklet: React.FC<LegacyBookletProps> = ({ onSelectStudent })
     return null;
   };
 
+  // Mobile Single Page renderer (0 to 13)
+  const renderSingleMobilePage = (pageIdx: number) => {
+    if (pageIdx === 0) {
+      // Mobile Cover
+      return (
+        <div className="h-full w-full bg-gradient-to-br from-[#0c1b3d] via-[#07132c] to-[#040919] p-6 flex flex-col items-center justify-between text-center text-white relative shadow-inner">
+          <div className="w-full flex items-center justify-between text-[10px] font-cinzel text-[#D4AF37]">
+            <span>MUST UNIVERSITY</span>
+            <span>FA23–2027</span>
+          </div>
+
+          <div className="my-auto flex flex-col items-center py-4">
+            <div className="w-20 h-20 rounded-full border-2 border-[#D4AF37] bg-[#030713] flex flex-col items-center justify-center text-xs font-cinzel text-[#D4AF37] mb-3 shadow-xl gold-box-glow">
+              <GraduationCap className="w-6 h-6 text-[#D4AF37] mb-0.5" />
+              <span className="font-bold text-[10px] text-white">BS MLT</span>
+            </div>
+            <h3 className="text-2xl font-cinzel font-bold text-[#F8F5EE] tracking-wide">OUR LEGACY</h3>
+            <div className="text-[11px] text-[#D4AF37] font-cinzel tracking-widest mt-1 uppercase">The 12 Brothers Yearbook</div>
+            <div className="w-12 h-[1px] bg-[#D4AF37]/50 my-2.5" />
+            <p className="text-xs font-editorial italic text-[#F5E5B8]/90 max-w-[240px]">
+              “We Came as Students. We Leave as Brothers.”
+            </p>
+          </div>
+
+          <div className="w-full flex items-center justify-between text-[10px] font-cinzel text-[#D4AF37]/80 pt-2 border-t border-[#D4AF37]/20">
+            <span>Swipe or Tap Right →</span>
+            <span>COVER</span>
+          </div>
+
+          {/* Corner Dog-Ear */}
+          <div
+            onClick={(e) => {
+              e.stopPropagation();
+              handleNext();
+            }}
+            className="absolute bottom-0 right-0 w-8 h-8 cursor-pointer group/corner z-20"
+          >
+            <div className="absolute bottom-0 right-0 w-0 h-0 border-solid border-t-[20px] border-l-[20px] border-b-0 border-r-0 border-t-transparent border-l-[#C8A45D]/60 transition-all" />
+          </div>
+        </div>
+      );
+    }
+
+    if (pageIdx >= 1 && pageIdx <= 12) {
+      const student = BATCH_STUDENTS[pageIdx - 1];
+      return renderStudentPage(student, pageIdx + 1, true);
+    }
+
+    // Page 13: Mobile Epilogue
+    return (
+      <div className="h-full w-full bg-[#FBF8F1] p-6 flex flex-col justify-between text-[#0A1124] text-center relative shadow-inner">
+        <div className="flex items-center justify-between pb-2.5 border-b border-[#8C6D2D]/30">
+          <span className="text-[10px] font-cinzel font-bold text-[#8C6D2D] uppercase">THE 2027 COVENANT</span>
+          <span className="text-xs font-mono font-bold text-[#8C6D2D]">PAGE 14</span>
+        </div>
+
+        <div className="my-auto py-3 flex flex-col items-center">
+          <ShieldCheck className="w-8 h-8 text-[#8C6D2D] mb-2" />
+          <h4 className="text-lg font-cinzel font-bold text-[#0F1B38] mb-1.5">
+            The Convocation Pledge
+          </h4>
+          <p className="text-xs font-editorial italic text-[#334155] leading-relaxed max-w-xs mb-3">
+            “We pledge that distance shall not erode our brotherhood, nor time diminish our shared university laughter.”
+          </p>
+          <div className="p-2.5 rounded-lg bg-[#EFE7D4] border border-[#C8A45D]/30 text-xs text-[#0F1B38] max-w-xs">
+            <span className="font-cinzel font-bold text-[#8C6D2D]">Reunion: 2033</span>
+            <div className="text-[10px] text-[#475569] mt-0.5">10-Year Grand Gathering at MUST</div>
+          </div>
+        </div>
+
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            playPageTurnSound();
+            setMobilePage(0);
+            setCurrentSpread(0);
+          }}
+          className="w-full py-2 bg-[#07132c] text-[#F5E5B8] font-cinzel font-bold text-xs rounded-lg shadow-md cursor-pointer"
+        >
+          Return to Front Cover
+        </button>
+      </div>
+    );
+  };
+
   return (
     <section
       id="booklet"
       aria-label="Interactive Batch Legacy Booklet"
       ref={bookletRef}
-      className="relative w-full min-h-[820px] lg:min-h-[900px] bg-[var(--bg-primary)] flex flex-col items-center justify-between py-12 px-4 sm:px-6 lg:px-8 overflow-hidden select-none border-y border-[var(--border-gold)] scroll-mt-16 sm:scroll-mt-20 transition-colors duration-400"
+      className="relative w-full min-h-[780px] lg:min-h-[880px] bg-[var(--bg-primary)] flex flex-col items-center justify-between py-10 sm:py-12 px-3 sm:px-6 lg:px-8 overflow-hidden select-none border-y border-[var(--border-gold)] scroll-mt-16 sm:scroll-mt-20 transition-colors duration-400"
     >
       {/* Background Ambient Cosmic Nebulas */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[600px] bg-gradient-to-r from-[#0c2256]/45 via-[#183a82]/35 to-[#0c2256]/45 rounded-full blur-[140px] pointer-events-none" />
       <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[340px] bg-[var(--accent-gold)]/10 rounded-full blur-[90px] pointer-events-none" />
 
       {/* Section Header */}
-      <div className="relative z-10 text-center max-w-3xl mx-auto mb-6 px-4">
+      <div className="relative z-10 text-center max-w-3xl mx-auto mb-5 sm:mb-6 px-3">
         <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-gold)] text-xs font-cinzel text-[var(--accent-gold)] uppercase tracking-widest mb-2 shadow-sm">
           <BookOpen className="w-3.5 h-3.5 text-[var(--accent-gold)]" />
           <span>Interactive 3D Batch Folio & Yearbook</span>
         </div>
-        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-cinzel font-bold text-[#F8F5EE] tracking-tight">
+        <h2 className="text-2xl sm:text-4xl lg:text-5xl font-cinzel font-bold text-[#F8F5EE] tracking-tight">
           The FA23 Legacy Booklet
         </h2>
-        <p className="mt-2 text-sm sm:text-base text-[var(--accent-champagne)]/90 font-editorial italic max-w-xl mx-auto">
+        <p className="mt-1.5 sm:mt-2 text-xs sm:text-base text-[var(--accent-champagne)]/90 font-editorial italic max-w-xl mx-auto">
           Turn the 3D pages of our 2023–2027 memory volume. Flip through brother profiles, batch pledges, and lab station memories.
         </p>
       </div>
@@ -473,21 +633,21 @@ export const LegacyBooklet: React.FC<LegacyBookletProps> = ({ onSelectStudent })
       {/* Main 3D Booklet Stage */}
       <div className="relative z-10 w-full max-w-5xl mx-auto my-auto flex flex-col items-center perspective-book">
         {/* Physical Book Wrapper with Hardcover Edge Lip & Shadow */}
-        <div className="relative w-full aspect-[4/3] sm:aspect-[16/10] max-h-[580px] rounded-2xl p-2.5 sm:p-3 bg-gradient-to-b from-[#182a4d] via-[#09152e] to-[#040c1e] border-2 border-[#C8A45D]/60 shadow-[0_30px_70px_-10px_rgba(0,0,0,0.9),0_0_50px_rgba(200,164,93,0.25)] flex overflow-visible">
-          {/* Stacked Paper Edges on Left and Right (Simulates 100+ physical pages) */}
+        <div className="relative w-full aspect-[4/5] xs:aspect-[3/4] sm:aspect-[16/10] max-h-[560px] sm:max-h-[580px] rounded-2xl p-2 sm:p-3 bg-gradient-to-b from-[#182a4d] via-[#09152e] to-[#040c1e] border-2 border-[#C8A45D]/60 shadow-[0_30px_70px_-10px_rgba(0,0,0,0.9),0_0_50px_rgba(200,164,93,0.25)] flex overflow-visible">
+          {/* Stacked Paper Edges (Simulates 100+ physical pages) */}
           <div className="hidden sm:block absolute -left-2 top-3 bottom-3 w-2.5 book-paper-edge-right rounded-l-sm shadow-md pointer-events-none opacity-85" />
-          <div className="hidden sm:block absolute -right-2 top-3 bottom-3 w-2.5 book-paper-edge-right rounded-r-sm shadow-md pointer-events-none opacity-85" />
-          <div className="hidden sm:block absolute left-3 right-3 -bottom-2 h-2.5 book-paper-edge-bottom rounded-b-sm shadow-md pointer-events-none opacity-85" />
+          <div className="absolute -right-2 top-3 bottom-3 w-2 sm:w-2.5 book-paper-edge-right rounded-r-sm shadow-md pointer-events-none opacity-85" />
+          <div className="absolute left-3 right-3 -bottom-2 h-2 sm:h-2.5 book-paper-edge-bottom rounded-b-sm shadow-md pointer-events-none opacity-85" />
 
           {/* Book Inner Spread Container */}
           <div className="relative w-full h-full rounded-xl overflow-hidden bg-[#07132c] flex book-transform-3d">
-            {/* Center Book Spine Binding Fold / Crease Shadow */}
+            {/* Center Book Spine Binding Fold / Crease Shadow (Desktop) */}
             <div className="hidden sm:block absolute left-1/2 top-0 bottom-0 w-10 -translate-x-1/2 bg-gradient-to-r from-black/45 via-black/15 to-black/45 z-30 pointer-events-none shadow-inner" />
             <div className="hidden sm:block absolute left-1/2 top-0 bottom-0 w-[1px] -translate-x-1/2 bg-[#C8A45D]/30 z-30 pointer-events-none" />
 
             {/* Golden Ribbon Bookmark */}
-            <div className="hidden sm:flex absolute left-1/2 -top-1 w-5 h-16 bg-gradient-to-b from-[#C8A45D] via-[#E7D39B] to-[#997930] -translate-x-1/2 z-40 rounded-b shadow-lg pointer-events-none">
-              <Bookmark className="w-4 h-4 text-[#07132c] mx-auto mt-2" />
+            <div className="absolute left-1/2 sm:left-1/2 -top-1 w-4 sm:w-5 h-12 sm:h-16 bg-gradient-to-b from-[#C8A45D] via-[#E7D39B] to-[#997930] -translate-x-1/2 z-40 rounded-b shadow-lg pointer-events-none">
+              <Bookmark className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-[#07132c] mx-auto mt-1 sm:mt-2" />
             </div>
 
             {/* DESKTOP 3D TWO-PAGE SPREAD VIEW (sm and above) */}
@@ -522,14 +682,12 @@ export const LegacyBooklet: React.FC<LegacyBookletProps> = ({ onSelectStudent })
                   {/* Front Face: The outgoing right page */}
                   <div className="absolute inset-0 w-full h-full book-face-front overflow-hidden">
                     {renderSpreadPage(flipState.fromSpread, 'right')}
-                    {/* Dynamic curl lighting shadow */}
                     <div className="absolute inset-0 bg-gradient-to-l from-black/35 via-white/10 to-transparent pointer-events-none" />
                   </div>
 
                   {/* Back Face: The incoming next left page */}
                   <div className="absolute inset-0 w-full h-full book-face-back overflow-hidden">
                     {renderSpreadPage(flipState.toSpread, 'left')}
-                    {/* Dynamic curl lighting shadow */}
                     <div className="absolute inset-0 bg-gradient-to-r from-black/35 via-white/10 to-transparent pointer-events-none" />
                   </div>
                 </div>
@@ -541,68 +699,71 @@ export const LegacyBooklet: React.FC<LegacyBookletProps> = ({ onSelectStudent })
                   {/* Front Face: The incoming previous right page */}
                   <div className="absolute inset-0 w-full h-full book-face-front overflow-hidden">
                     {renderSpreadPage(flipState.toSpread, 'right')}
-                    {/* Dynamic curl lighting shadow */}
                     <div className="absolute inset-0 bg-gradient-to-l from-black/35 via-white/10 to-transparent pointer-events-none" />
                   </div>
 
                   {/* Back Face: The outgoing left page */}
                   <div className="absolute inset-0 w-full h-full book-face-back overflow-hidden">
                     {renderSpreadPage(flipState.fromSpread, 'left')}
-                    {/* Dynamic curl lighting shadow */}
                     <div className="absolute inset-0 bg-gradient-to-r from-black/35 via-white/10 to-transparent pointer-events-none" />
                   </div>
                 </div>
               )}
             </div>
 
-            {/* MOBILE 1-PAGE RESPONSIVE VIEW (sm and below) */}
-            <div className="sm:hidden w-full h-full overflow-y-auto">
-              {mobilePage === 0 ? (
-                /* Mobile Cover Page */
-                <div className="min-h-full bg-gradient-to-br from-[#0c1b3d] to-[#040919] p-6 flex flex-col items-center justify-between text-center text-white">
-                  <span className="text-[10px] font-cinzel text-[#D4AF37]">MUST · BS MLT FA23</span>
-                  <div className="my-auto flex flex-col items-center py-6">
-                    <div className="w-20 h-20 rounded-full border-2 border-[#D4AF37] bg-[#030713] flex items-center justify-center text-xs font-cinzel text-[#D4AF37] mb-3 shadow-lg">
-                      12 BOYS
-                    </div>
-                    <h3 className="text-2xl font-cinzel font-bold">OUR LEGACY</h3>
-                    <div className="text-xs text-[#D4AF37] font-cinzel mt-1">Class of 2023–2027</div>
-                    <p className="text-xs font-editorial italic text-[#F5E5B8]/80 mt-2">
-                      “We Came as Students. We Leave as Brothers.”
-                    </p>
+            {/* MOBILE 3D REAL BOOK PAGE TURN VIEW (sm and below) */}
+            <div
+              className="sm:hidden w-full h-full relative book-transform-3d cursor-pointer"
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
+              onClick={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                if (x > rect.width * 0.5) {
+                  handleNext();
+                } else {
+                  handlePrev();
+                }
+              }}
+            >
+              {/* UNDERNEATH STATIONARY MOBILE PAGE */}
+              <div className="w-full h-full relative">
+                {renderSingleMobilePage(
+                  mobileFlipState ? mobileFlipState.toPage : mobilePage
+                )}
+              </div>
+
+              {/* DYNAMIC 3D MOBILE FLIPPING LEAF (NEXT TURN) */}
+              {mobileFlipState && mobileFlipState.direction === 'next' && (
+                <div className="absolute inset-0 w-full h-full z-40 animate-page-flip-next book-transform-3d pointer-events-none">
+                  {/* Front Face: The outgoing mobile page */}
+                  <div className="absolute inset-0 w-full h-full book-face-front overflow-hidden">
+                    {renderSingleMobilePage(mobileFlipState.fromPage)}
+                    <div className="absolute inset-0 bg-gradient-to-l from-black/40 via-white/15 to-transparent pointer-events-none" />
                   </div>
-                  <button
-                    onClick={handleNext}
-                    className="w-full py-2 bg-[#D4AF37] text-[#030713] font-cinzel font-bold text-xs rounded-lg shadow-md cursor-pointer"
-                  >
-                    Open Booklet (Page 1) →
-                  </button>
+
+                  {/* Back Face: The incoming next mobile page */}
+                  <div className="absolute inset-0 w-full h-full book-face-back overflow-hidden">
+                    {renderSingleMobilePage(mobileFlipState.toPage)}
+                    <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-white/15 to-transparent pointer-events-none" />
+                  </div>
                 </div>
-              ) : mobilePage <= 12 ? (
-                /* Mobile Single Student Page */
-                renderStudentPage(BATCH_STUDENTS[mobilePage - 1], mobilePage, false)
-              ) : (
-                /* Mobile Epilogue */
-                <div className="min-h-full bg-[#FBF8F1] p-6 flex flex-col justify-between text-[#0A1124] text-center">
-                  <span className="text-[10px] font-cinzel font-bold text-[#8C6D2D]">EPILOGUE</span>
-                  <div className="my-auto py-4">
-                    <h4 className="text-xl font-cinzel font-bold text-[#0F1B38] mb-2">
-                      The 2027 Convocation Pledge
-                    </h4>
-                    <p className="text-xs font-editorial italic text-[#334155] leading-relaxed">
-                      “We pledge that distance shall not erode our brotherhood, nor time diminish our shared university laughter.”
-                    </p>
+              )}
+
+              {/* DYNAMIC 3D MOBILE FLIPPING LEAF (PREV TURN) */}
+              {mobileFlipState && mobileFlipState.direction === 'prev' && (
+                <div className="absolute inset-0 w-full h-full z-40 animate-page-flip-prev book-transform-3d pointer-events-none">
+                  {/* Front Face: The incoming previous mobile page */}
+                  <div className="absolute inset-0 w-full h-full book-face-front overflow-hidden">
+                    {renderSingleMobilePage(mobileFlipState.toPage)}
+                    <div className="absolute inset-0 bg-gradient-to-l from-black/40 via-white/15 to-transparent pointer-events-none" />
                   </div>
-                  <button
-                    onClick={() => {
-                      playPageTurnSound();
-                      setMobilePage(0);
-                      setCurrentSpread(0);
-                    }}
-                    className="w-full py-2 bg-[#07132c] text-[#F5E5B8] font-cinzel font-bold text-xs rounded-lg cursor-pointer"
-                  >
-                    Return to Front Cover
-                  </button>
+
+                  {/* Back Face: The outgoing mobile page */}
+                  <div className="absolute inset-0 w-full h-full book-face-back overflow-hidden">
+                    {renderSingleMobilePage(mobileFlipState.fromPage)}
+                    <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-white/15 to-transparent pointer-events-none" />
+                  </div>
                 </div>
               )}
             </div>
@@ -610,14 +771,14 @@ export const LegacyBooklet: React.FC<LegacyBookletProps> = ({ onSelectStudent })
         </div>
 
         {/* Booklet Interactive Control Dock */}
-        <div className="w-full max-w-2xl mt-5 px-2 flex flex-col sm:flex-row items-center justify-between gap-3 bg-[var(--bg-secondary)]/95 border border-[var(--border-gold)] rounded-xl p-3 shadow-xl backdrop-blur-md">
+        <div className="w-full max-w-2xl mt-4 sm:mt-5 px-2 flex flex-col sm:flex-row items-center justify-between gap-3 bg-[var(--bg-secondary)]/95 border border-[var(--border-gold)] rounded-xl p-2.5 sm:p-3 shadow-xl backdrop-blur-md">
           {/* Flip Controls */}
           <div className="flex items-center gap-2">
             <button
               onClick={handlePrev}
-              disabled={Boolean(flipState) || (currentSpread === 0 && mobilePage === 0)}
+              disabled={Boolean(flipState || mobileFlipState) || (currentSpread === 0 && mobilePage === 0)}
               className="px-3 py-1.5 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-gold)] text-[var(--accent-champagne)] hover:text-white disabled:opacity-40 transition-colors flex items-center gap-1 text-xs cursor-pointer"
-              title="Previous Page (or press ← Left Arrow)"
+              title="Previous Page (or swipe right)"
             >
               <ChevronLeft className="w-4 h-4" />
               <span className="hidden sm:inline font-cinzel">Prev Page</span>
@@ -628,15 +789,15 @@ export const LegacyBooklet: React.FC<LegacyBookletProps> = ({ onSelectStudent })
                 Spread {currentSpread + 1} of {totalSpreads}
               </span>
               <span className="sm:hidden">
-                Page {mobilePage + 1} of 14
+                Page {mobilePage + 1} of {totalMobilePages}
               </span>
             </span>
 
             <button
               onClick={handleNext}
-              disabled={Boolean(flipState) || (currentSpread === totalSpreads - 1 && mobilePage === 13)}
+              disabled={Boolean(flipState || mobileFlipState) || (currentSpread === totalSpreads - 1 && mobilePage === totalMobilePages - 1)}
               className="px-3 py-1.5 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-gold)] text-[var(--accent-champagne)] hover:text-white disabled:opacity-40 transition-colors flex items-center gap-1 text-xs cursor-pointer"
-              title="Next Page (or press → Right Arrow)"
+              title="Next Page (or swipe left)"
             >
               <span className="hidden sm:inline font-cinzel">Next Page</span>
               <ChevronRight className="w-4 h-4" />
@@ -659,7 +820,7 @@ export const LegacyBooklet: React.FC<LegacyBookletProps> = ({ onSelectStudent })
             <div className="relative">
               <button
                 onClick={() => setTocOpen(!tocOpen)}
-                className="px-3 py-1.5 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-gold)] text-[var(--accent-champagne)] hover:text-white flex items-center gap-1.5 text-xs font-cinzel cursor-pointer"
+                className="px-2.5 sm:px-3 py-1.5 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-gold)] text-[var(--accent-champagne)] hover:text-white flex items-center gap-1.5 text-xs font-cinzel cursor-pointer"
               >
                 <List className="w-3.5 h-3.5 text-[var(--accent-gold)]" />
                 <span>Jump to Brother</span>

@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Play, Volume2, VolumeX, X, Film, Sparkles, BookOpen } from 'lucide-react';
+import batchFilmCinematicImg from '../assets/images/batch_film_cinematic_1792668356841.jpg';
 
 export const StoryAndFilmSection: React.FC = () => {
   const [filmModalOpen, setFilmModalOpen] = useState(false);
@@ -140,9 +141,13 @@ export const StoryAndFilmSection: React.FC = () => {
           {/* Background image container with scrim */}
           <div className="relative aspect-[21/9] min-h-[300px] sm:min-h-[380px] w-full overflow-hidden">
             <img
-              src="/src/assets/images/batch_film_cinematic_1792668356841.jpg"
+              src={batchFilmCinematicImg}
               alt="Medical laboratory setting under warm golden cinematic lighting"
-              referrerPolicy="no-referrer"
+              loading="eager"
+              decoding="async"
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).src = '/assets/images/batch_film_cinematic_1792668356841.jpg';
+              }}
               className="w-full h-full object-cover object-center brightness-75 scale-100 hover:scale-105 transition-transform duration-1000"
             />
             {/* Dark vignette scrims */}
@@ -233,8 +238,13 @@ export const StoryAndFilmSection: React.FC = () => {
             {/* Video Player Simulator Screen */}
             <div className="relative aspect-video w-full bg-[#070D1C] overflow-hidden flex flex-col justify-between p-6">
               <img
-                src="/src/assets/images/batch_film_cinematic_1792668356841.jpg"
+                src={batchFilmCinematicImg}
                 alt="Film preview frame"
+                loading="eager"
+                decoding="async"
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).src = '/assets/images/batch_film_cinematic_1792668356841.jpg';
+                }}
                 className="absolute inset-0 w-full h-full object-cover opacity-60"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#070D1C] via-[#070D1C]/40 to-transparent" />

@@ -55,8 +55,12 @@ export const Navigation: React.FC<NavigationProps> = ({ onExploreClick }) => {
           onClick={scrollToTop}
           className="group flex items-center gap-2.5 sm:gap-3 text-base sm:text-xl font-cinzel font-bold tracking-wider text-[#F8F5EE] whitespace-nowrap shrink-0 hover:text-[var(--accent-champagne)] transition-colors cursor-pointer"
         >
-          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-[var(--accent-gold)]/60 bg-[var(--bg-secondary)] flex items-center justify-center text-[10px] sm:text-xs font-serif text-[var(--accent-gold)] group-hover:scale-105 transition-transform shadow-inner">
-            MUST
+          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-[var(--accent-gold)]/80 bg-[var(--bg-secondary)] overflow-hidden flex items-center justify-center group-hover:scale-105 group-hover:border-[var(--accent-gold)] transition-all shadow-[0_0_14px_rgba(212,175,55,0.4)] shrink-0">
+            <img
+              src="/logo.png"
+              alt="MUST BS MLT Official Department Logo"
+              className="w-full h-full object-cover rounded-full"
+            />
           </div>
           <span>MUST · BS MLT BOYS</span>
         </a>

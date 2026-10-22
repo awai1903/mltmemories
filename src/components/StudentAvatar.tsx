@@ -37,10 +37,12 @@ export const StudentAvatar: React.FC<StudentAvatarProps> = ({
         <img
           src={student.photoUrl}
           alt={student.name}
+          loading="eager"
+          decoding="async"
           referrerPolicy="no-referrer"
           onError={() => setImageError(true)}
           onLoad={() => setImageLoaded(true)}
-          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-150 ${
             imageLoaded ? 'opacity-100 z-10' : 'opacity-0'
           }`}
         />

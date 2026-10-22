@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Lock, KeyRound, Sparkles, Send, CheckCircle2, X, Clock } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import timeCapsuleRelicImg from '../assets/images/time_capsule_relic_1792668357581.jpg';
 
 export const TimeCapsuleSection: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
@@ -46,9 +47,13 @@ export const TimeCapsuleSection: React.FC = () => {
           <div className="relative flex flex-col items-center justify-center">
             <div className="relative w-full max-w-md aspect-square rounded-2xl overflow-hidden border border-[#C8A45D]/40 shadow-2xl gold-box-glow group">
               <img
-                src="/src/assets/images/time_capsule_relic_1792668357581.jpg"
+                src={timeCapsuleRelicImg}
                 alt="Sealed golden time capsule cylinder relic"
-                referrerPolicy="no-referrer"
+                loading="eager"
+                decoding="async"
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).src = '/assets/images/time_capsule_relic_1792668357581.jpg';
+                }}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#070D1C]/90 via-transparent to-transparent" />
