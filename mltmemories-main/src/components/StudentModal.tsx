@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Student } from '../data/students';
 import { StudentAvatar } from './StudentAvatar';
-import { X, Award, Microscope, Quote, Sparkles, BookOpen } from 'lucide-react';
+import { X, Microscope, Quote, Sparkles, BookOpen } from 'lucide-react';
 
 interface StudentModalProps {
   student: Student | null;
@@ -134,15 +134,6 @@ export const StudentModal: React.FC<StudentModalProps> = ({ student, onClose }) 
             </div>
           </div>
 
-          {/* Sample Data Disclaimer Note */}
-          <div className="pt-2">
-            <div className="p-3 rounded-lg bg-[#070D1C]/80 border border-[#C8A45D]/20 text-[11px] text-[#E7D39B]/70 flex items-start gap-2.5">
-              <Award className="w-4 h-4 text-[#C8A45D] shrink-0 mt-0.5" />
-              <div>
-                <span className="font-semibold text-[#E7D39B]">Roster Profile Note:</span> Roll numbers and names are official batch records. Quotes, focus fields, and personal bios are sample archive placeholders ready to be updated with real personal statements and photographs in <code className="text-[#C8A45D]">public/boys-photos/{student.rollNo}.jpg</code>.
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Modal Actions */}

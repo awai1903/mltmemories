@@ -142,9 +142,6 @@ export const TimeCapsuleSection: React.FC = () => {
 
             {!isSealed ? (
               <form onSubmit={handleSealMessage} className="space-y-4">
-                <div className="p-3 rounded-lg bg-[#070D1C] border border-[#C8A45D]/25 text-xs text-[#E7D39B]/80">
-                  <span className="font-semibold text-white">Notice:</span> This is a frontend demonstration of the future Time Capsule feature. Messages drafted here are simulated in local state and will not be sent to an external server.
-                </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>

@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Play, Volume2, VolumeX, X, Film, Sparkles, BookOpen, Clock } from 'lucide-react';
+import { Play, Volume2, VolumeX, X, Film, Sparkles, BookOpen } from 'lucide-react';
 
 export const StoryAndFilmSection: React.FC = () => {
   const [filmModalOpen, setFilmModalOpen] = useState(false);
@@ -302,13 +302,6 @@ export const StoryAndFilmSection: React.FC = () => {
                 ))}
               </div>
 
-              {/* Director's Note */}
-              <div className="mt-4 p-3 rounded-lg bg-[#070D1C] border border-[#C8A45D]/20 text-[11px] text-[#E7D39B]/80 flex items-start gap-2">
-                <Clock className="w-4 h-4 text-[#C8A45D] shrink-0 mt-0.5" />
-                <div>
-                  <span className="font-semibold text-white">Production Note:</span> The complete batch retrospective documentary will be compiled with raw lab video footage and student interviews. Video file embedding will occur upon graduation release.
-                </div>
-              </div>
             </div>
           </div>
         </div>

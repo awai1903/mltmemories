@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { BATCH_STUDENTS, Student } from '../data/students';
 import { StudentAvatar } from './StudentAvatar';
-import { Search, ArrowUpDown, ArrowRight, UserX, Info } from 'lucide-react';
+import { Search, ArrowUpDown, ArrowRight, UserX } from 'lucide-react';
 
 interface DirectorySectionProps {
   onSelectStudent: (student: Student) => void;
@@ -46,11 +46,6 @@ export const DirectorySection: React.FC<DirectorySectionProps> = ({ onSelectStud
             12 distinctive paths united in medical laboratory science. Search through the roster to discover roles, specialties, and batch memories.
           </p>
 
-          {/* Sample disclaimer banner */}
-          <div className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#0B1530] border border-[#C8A45D]/25 text-xs text-[#E7D39B]/80">
-            <Info className="w-3.5 h-3.5 text-[#C8A45D] shrink-0" />
-            <span>Official roll numbers & names. Bios and quotes are sample archive profiles.</span>
-          </div>
         </div>
 
         {/* Search & Sort Controls Bar */}
