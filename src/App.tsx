@@ -16,9 +16,10 @@ import { Footer } from './components/Footer';
 import { StudentModal } from './components/StudentModal';
 import { Countdown2027 } from './components/Countdown2027';
 import { FarewellWall } from './components/FarewellWall';
+import { ThemeProvider } from './context/ThemeContext';
 import { Student } from './data/students';
 
-export default function App() {
+function AppContent() {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
 
   const scrollToRing = () => {
@@ -29,7 +30,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#070D1C] text-[#F5F0E5] flex flex-col font-sans selection:bg-[#C8A45D]/30 selection:text-[#E7D39B]">
+    <div className="min-h-screen bg-[var(--bg-primary)] text-[#F8F5EE] flex flex-col font-sans selection:bg-[var(--accent-gold)]/30 selection:text-[var(--accent-champagne)] transition-colors duration-400">
       {/* Top 3-Zone Navigation */}
       <Navigation onExploreClick={scrollToRing} />
 
@@ -38,7 +39,7 @@ export default function App() {
         {/* Full-screen Hero Section */}
         <Hero onScrollToExplore={scrollToRing} />
 
-        {/* Signature Feature: Tilted 3D Rotating Photo Ring */}
+        {/* Signature Feature: Tilted 3D Rotating Photo Ring with Pulsing Orbit & Atmospheric Space Glow */}
         <PhotoRing3D onSelectStudent={(student) => setSelectedStudent(student)} />
 
         {/* 2027 Convocation & Farewell Countdown Banner */}
@@ -74,5 +75,13 @@ export default function App() {
         onClose={() => setSelectedStudent(null)}
       />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
   );
 }

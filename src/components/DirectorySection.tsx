@@ -31,7 +31,7 @@ export const DirectorySection: React.FC<DirectorySectionProps> = ({ onSelectStud
     <section
       id="directory"
       aria-label="Student Roster Directory"
-      className="relative w-full py-16 sm:py-24 px-4 sm:px-6 lg:px-8 bg-[#070D1C] border-t border-[#C8A45D]/15"
+      className="relative w-full py-16 sm:py-24 px-4 sm:px-6 lg:px-8 bg-[var(--bg-primary)] border-t border-[var(--border-gold)] transition-colors duration-400"
     >
       <div className="max-w-7xl mx-auto">
         {/* Header */}

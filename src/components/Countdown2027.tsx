@@ -42,22 +42,22 @@ export const Countdown2027: React.FC = () => {
 
   return (
     <div className="relative w-full max-w-5xl mx-auto px-4 py-8">
-      <div className="relative rounded-2xl bg-gradient-to-r from-[#0B1530] via-[#102047] to-[#0B1530] border border-[#C8A45D]/40 p-6 sm:p-8 shadow-2xl gold-box-glow text-center overflow-hidden">
+      <div className="relative rounded-2xl bg-gradient-to-r from-[var(--bg-secondary)] via-[var(--bg-card)] to-[var(--bg-secondary)] border border-[var(--border-gold)] p-6 sm:p-8 shadow-2xl gold-box-glow text-center overflow-hidden transition-colors duration-400">
         {/* Top Gold Ribbon Line */}
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#C8A45D] to-transparent" />
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[var(--accent-gold)] to-transparent" />
 
         {/* Badge */}
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#070D1C] border border-[#C8A45D]/30 text-xs font-cinzel text-[#C8A45D] uppercase tracking-widest mb-3">
-          <GraduationCap className="w-4 h-4 text-[#C8A45D]" />
+        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[var(--bg-primary)] border border-[var(--border-gold)] text-xs font-cinzel text-[var(--accent-gold)] uppercase tracking-widest mb-3 shadow-sm">
+          <GraduationCap className="w-4 h-4 text-[var(--accent-gold)]" />
           <span>Destination: 2027 Farewell & Convocation</span>
         </div>
 
         {/* Heading */}
-        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-cinzel font-bold text-[#F5F0E5] tracking-tight">
+        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-cinzel font-bold text-[#F8F5EE] tracking-tight">
           Every Moment Until 2027 Counts
         </h2>
 
-        <p className="mt-2 text-xs sm:text-sm text-[#E7D39B]/90 font-editorial italic max-w-2xl mx-auto leading-relaxed">
+        <p className="mt-2 text-xs sm:text-sm text-[var(--accent-champagne)]/90 font-editorial italic max-w-2xl mx-auto leading-relaxed">
           “In 2027, we will complete our BS MLT degrees and take different paths into the world. This website exists so our four years together never fade from memory.”
         </p>
 

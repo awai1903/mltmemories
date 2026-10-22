@@ -109,7 +109,7 @@ export const FarewellWall: React.FC<{ onSelectStudent: (student: Student) => voi
     <section
       id="farewell"
       aria-label="2027 Farewell & Brotherhood Wall"
-      className="relative w-full py-16 sm:py-24 px-4 sm:px-6 lg:px-8 bg-[#0B1530]/60 border-t border-[#C8A45D]/20"
+      className="relative w-full py-16 sm:py-24 px-4 sm:px-6 lg:px-8 bg-[var(--bg-secondary)]/60 border-t border-[var(--border-gold)] transition-colors duration-400"
     >
       <div className="max-w-6xl mx-auto">
         {/* Header */}

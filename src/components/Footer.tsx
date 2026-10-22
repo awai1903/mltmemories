@@ -18,7 +18,7 @@ export const Footer: React.FC = () => {
   ];
 
   return (
-    <footer className="relative w-full bg-[#050914] border-t border-[#C8A45D]/20 text-[#F5F0E5] py-12 px-4 sm:px-6 lg:px-8">
+    <footer className="relative w-full bg-[var(--bg-primary)] border-t border-[var(--border-gold)] text-[#F8F5EE] py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-400">
       <div className="max-w-7xl mx-auto flex flex-col items-center justify-between gap-8 text-center sm:text-left sm:flex-row">
         {/* Brand Lockup */}
         <div className="flex flex-col items-center sm:items-start">
