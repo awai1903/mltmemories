@@ -64,3 +64,23 @@ The application is architected with a unified photo lookup system keyed to each 
 - **Our Journey Timeline**: Chronological narrative of milestones with interactive milestone viewer.
 - **Time Capsule Relic**: Sealed future vault modal concept for future batch messages.
 - **Batch Film Premiere Experience**: Cinematic preview player modal with ambient soundtrack simulator, chapter markers, and director notes.
+
+---
+
+## ☁️ Netlify deployment (Functions API)
+
+The project now includes a Netlify Functions implementation for the existing `/api/*` routes. The frontend can keep calling the same paths, so no frontend API URL rewrite is needed.
+
+### Deploy
+
+1. Commit/push this project to the GitHub repository connected to your Netlify site, or upload the project through your preferred Git workflow.
+2. In Netlify, set the build command to `npm run build` and publish directory to `dist`. `netlify.toml` already contains these settings and the Functions directory.
+3. Ensure the site has Netlify Functions and Blobs enabled for the account/site, then trigger a new deploy.
+4. After deploy, check `https://YOUR-SITE.netlify.app/api/health`, `/api/memories`, and `/api/farewell-notes`.
+
+### Persistence and production caveats
+
+- The Functions API stores the two JSON collections in a site-wide Netlify Blobs store so they persist across deploys. Blobs is a key/value store, not a transactional database; simultaneous likes/submissions can overwrite each other under concurrent writes. For a larger public launch, migrate these collections to a transactional database such as Netlify DB/Postgres.
+- The write endpoints are still public. Before inviting the public, add admin moderation/authentication and abuse protection/rate limiting. Do not treat this starter conversion as a complete production security review.
+- Existing `server.ts` remains available for local development. Netlify uses `netlify/functions/api.mts` for `/api/*` routes.
+- This archive was prepared without a successful local dependency install/build because package installation timed out in this environment. Verify the Netlify build log before announcing the site as deployed.

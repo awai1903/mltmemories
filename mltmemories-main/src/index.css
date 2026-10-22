@@ -1,0 +1,159 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-primary: #030713;
+    --bg-secondary: #07132c;
+    --bg-card: #0b1a3d;
+    --border-gold: rgba(212, 175, 55, 0.35);
+    --border-gold-focus: rgba(212, 175, 55, 0.8);
+    --accent-gold: #D4AF37;
+    --accent-champagne: #F5E5B8;
+    --glow-color: rgba(212, 175, 55, 0.3);
+    --space-glow: rgba(30, 64, 175, 0.35);
+    --color-midnight: #030713;
+    --color-deep-blue: #07132c;
+    --color-gold: #D4AF37;
+    --color-champagne: #F5E5B8;
+    --color-ivory: #F8F5EE;
+  }
+
+  [data-theme="royal-gold"] {
+    --bg-primary: #070D1C;
+    --bg-secondary: #0B1530;
+    --bg-card: #102047;
+    --border-gold: rgba(200, 164, 93, 0.35);
+    --border-gold-focus: rgba(200, 164, 93, 0.8);
+    --accent-gold: #C8A45D;
+    --accent-champagne: #E7D39B;
+    --glow-color: rgba(200, 164, 93, 0.3);
+    --space-glow: rgba(16, 32, 71, 0.4);
+    --color-midnight: #070D1C;
+    --color-deep-blue: #0B1530;
+    --color-gold: #C8A45D;
+    --color-champagne: #E7D39B;
+    --color-ivory: #F5F0E5;
+  }
+
+  [data-theme="emerald-lab"] {
+    --bg-primary: #030d0d;
+    --bg-secondary: #071b1c;
+    --bg-card: #0d2a2c;
+    --border-gold: rgba(212, 175, 55, 0.35);
+    --border-gold-focus: rgba(45, 212, 191, 0.7);
+    --accent-gold: #E7D39B;
+    --accent-champagne: #2DD4BF;
+    --glow-color: rgba(45, 212, 191, 0.25);
+    --space-glow: rgba(13, 148, 136, 0.3);
+    --color-midnight: #030d0d;
+    --color-deep-blue: #071b1c;
+    --color-gold: #E7D39B;
+    --color-champagne: #2DD4BF;
+    --color-ivory: #F2FAF8;
+  }
+
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--bg-primary);
+    color: var(--color-ivory);
+    overflow-x: hidden;
+    transition: background-color 400ms ease, color 400ms ease;
+  }
+
+  h1, h2, h3, .font-cinzel {
+    font-family: 'Cinzel', serif;
+  }
+
+  .font-editorial {
+    font-family: 'Cormorant Garamond', serif;
+  }
+}
+
+/* Custom luxury scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(212, 175, 55, 0.35);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(212, 175, 55, 0.7);
+}
+
+/* Gold glow utilities */
+.gold-glow {
+  text-shadow: 0 0 20px rgba(212, 175, 55, 0.5), 0 0 40px rgba(212, 175, 55, 0.25);
+}
+
+.gold-box-glow {
+  box-shadow: 0 0 35px -5px rgba(212, 175, 55, 0.25), inset 0 0 15px rgba(212, 175, 55, 0.08);
+}
+
+.gold-border {
+  border-color: var(--border-gold);
+}
+
+.gold-border-focus {
+  border-color: var(--border-gold-focus);
+}
+
+/* Subtle Golden Lens Flare Effect for Memory Wall Tiles */
+.lens-flare-sheen {
+  background: linear-gradient(
+    108deg,
+    transparent 20%,
+    rgba(212, 175, 55, 0.03) 38%,
+    rgba(245, 229, 184, 0.32) 48%,
+    rgba(255, 250, 235, 0.65) 50%,
+    rgba(212, 175, 55, 0.32) 52%,
+    rgba(212, 175, 55, 0.03) 62%,
+    transparent 80%
+  );
+  transform: translateX(-160%) skewX(-20deg);
+  transition: transform 900ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.group:hover .lens-flare-sheen {
+  transform: translateX(220%) skewX(-20deg);
+}
+
+/* Anamorphic Golden Light Streak */
+.lens-flare-anamorphic {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(212, 175, 55, 0.1) 20%,
+    rgba(245, 229, 184, 0.8) 50%,
+    rgba(255, 255, 255, 0.95) 52%,
+    rgba(245, 229, 184, 0.8) 54%,
+    rgba(212, 175, 55, 0.1) 80%,
+    transparent 100%
+  );
+}
+
+/* Orbit line pulsing breathing effect */
+@keyframes orbit-pulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.65)) drop-shadow(0 0 25px rgba(212, 175, 55, 0.35));
+  }
+  50% {
+    filter: drop-shadow(0 0 24px rgba(245, 229, 184, 0.95)) drop-shadow(0 0 45px rgba(212, 175, 55, 0.55));
+  }
+}
+
+.animate-orbit-pulse {
+  animation: orbit-pulse 4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lens-flare-sheen {
+    display: none;
+  }
+  .animate-orbit-pulse {
+    animation: none;
+  }
+}
