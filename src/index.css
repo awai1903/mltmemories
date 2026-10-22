@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --color-midnight: #070D1C;
+    --color-deep-blue: #0B1530;
+    --color-gold: #C8A45D;
+    --color-champagne: #E7D39B;
+    --color-ivory: #F5F0E5;
+  }
+
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #070D1C;
+    color: #F5F0E5;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, .font-cinzel {
+    font-family: 'Cinzel', serif;
+  }
+
+  .font-editorial {
+    font-family: 'Cormorant Garamond', serif;
+  }
+}
+
+/* Custom luxury scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #070D1C;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(200, 164, 93, 0.35);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(200, 164, 93, 0.65);
+}
+
+/* Gold glow utilities */
+.gold-glow {
+  text-shadow: 0 0 20px rgba(200, 164, 93, 0.45), 0 0 40px rgba(200, 164, 93, 0.2);
+}
+
+.gold-box-glow {
+  box-shadow: 0 0 35px -5px rgba(200, 164, 93, 0.25), inset 0 0 15px rgba(200, 164, 93, 0.08);
+}
+
+.gold-border {
+  border-color: rgba(200, 164, 93, 0.3);
+}
+
+.gold-border-focus {
+  border-color: rgba(200, 164, 93, 0.7);
+}
