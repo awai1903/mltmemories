@@ -67,6 +67,23 @@ export const FarewellWall: React.FC<{ onSelectStudent: (student: Student) => voi
   const [message, setMessage] = useState('');
   const [activeTab, setActiveTab] = useState<'roster-notes' | 'guestbook'>('roster-notes');
 
+  // Fetch farewell notes from backend on mount
+  useEffect(() => {
+    fetch('/api/farewell-notes')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setNotes(data);
+          try {
+            localStorage.setItem(FAREWELL_STORAGE_KEY, JSON.stringify(data));
+          } catch (e) {
+            console.error(e);
+          }
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   useEffect(() => {
     try {
       localStorage.setItem(FAREWELL_STORAGE_KEY, JSON.stringify(notes));
@@ -93,6 +110,13 @@ export const FarewellWall: React.FC<{ onSelectStudent: (student: Student) => voi
     setAuthorRole('');
     setMessage('');
 
+    // Sync with backend API
+    fetch('/api/farewell-notes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newNote),
+    }).catch(() => {});
+
     confetti({
       particleCount: 50,
       spread: 60,
@@ -103,6 +127,7 @@ export const FarewellWall: React.FC<{ onSelectStudent: (student: Student) => voi
 
   const handleLikeNote = (id: string) => {
     setNotes(notes.map((n) => (n.id === id ? { ...n, likes: n.likes + 1 } : n)));
+    fetch(`/api/farewell-notes/${id}/like`, { method: 'POST' }).catch(() => {});
   };
 
   return (

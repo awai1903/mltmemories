@@ -17,6 +17,9 @@ import {
   INITIAL_MEMORIES,
   getSavedMemories,
   saveMemories,
+  fetchMemoriesFromBackend,
+  postMemoryToBackend,
+  likeMemoryOnBackend,
 } from '../data/memories';
 import { BATCH_STUDENTS } from '../data/students';
 import confetti from 'canvas-confetti';
@@ -42,9 +45,11 @@ export const MemoryWallSection: React.FC = () => {
 
   const photoInputId = useId();
 
-  // Load from localStorage on mount
+  // Load from backend API with localStorage fallback
   useEffect(() => {
-    setMemories(getSavedMemories());
+    fetchMemoriesFromBackend().then((data) => {
+      setMemories(data);
+    });
   }, []);
 
   const categories = [
@@ -72,6 +77,7 @@ export const MemoryWallSection: React.FC = () => {
     );
     setMemories(updated);
     saveMemories(updated);
+    likeMemoryOnBackend(id);
   };
 
   const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -125,6 +131,7 @@ export const MemoryWallSection: React.FC = () => {
     const updated = [newMemory, ...memories];
     setMemories(updated);
     saveMemories(updated);
+    postMemoryToBackend(newMemory);
 
     // Reset Form
     setFormTitle('');

@@ -114,3 +114,44 @@ export const saveMemories = (memories: MemoryItem[]): void => {
     console.error('Failed to save memories to localStorage', e);
   }
 };
+
+// Backend API synchronization with graceful offline/local fallback
+export const fetchMemoriesFromBackend = async (): Promise<MemoryItem[]> => {
+  try {
+    const res = await fetch('/api/memories');
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        saveMemories(data);
+        return data;
+      }
+    }
+  } catch {
+    // Backend offline or running static
+  }
+  return getSavedMemories();
+};
+
+export const postMemoryToBackend = async (memory: Partial<MemoryItem>): Promise<MemoryItem | null> => {
+  try {
+    const res = await fetch('/api/memories', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(memory),
+    });
+    if (res.ok) {
+      return (await res.json()) as MemoryItem;
+    }
+  } catch {
+    // fallback
+  }
+  return null;
+};
+
+export const likeMemoryOnBackend = async (id: string): Promise<void> => {
+  try {
+    await fetch(`/api/memories/${id}/like`, { method: 'POST' });
+  } catch {
+    // fallback
+  }
+};
