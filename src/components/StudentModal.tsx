@@ -60,7 +60,7 @@ export const StudentModal: React.FC<StudentModalProps> = ({ student, onClose }) 
               MUST · FA23 · BS MLT
             </div>
             <h2 id="student-modal-title" className="text-2xl sm:text-3xl font-cinzel font-bold text-[#F5F0E5] tracking-wide">
-              {student.name}
+              {student.name} <span className="font-editorial italic text-[#E7D39B] text-xl font-normal">"{student.nickname}"</span>
             </h2>
             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-1.5 text-xs text-[#E7D39B]/90 font-medium">
               <span className="font-mono text-[#C8A45D] bg-[#070D1C] px-2 py-0.5 rounded border border-[#C8A45D]/30">
@@ -68,6 +68,8 @@ export const StudentModal: React.FC<StudentModalProps> = ({ student, onClose }) 
               </span>
               <span aria-hidden="true" className="text-[#C8A45D]/50">·</span>
               <span>{student.batchRole}</span>
+              <span aria-hidden="true" className="text-[#C8A45D]/50">·</span>
+              <span className="text-[#C8A45D] font-cinzel">Class of 2027</span>
             </div>
             
             <p className="mt-2 text-xs text-[#E7D39B]/70 flex items-center justify-center sm:justify-start gap-1.5">
@@ -95,6 +97,17 @@ export const StudentModal: React.FC<StudentModalProps> = ({ student, onClose }) 
             </h3>
             <p className="text-[#F5F0E5]/90 leading-relaxed text-sm">
               {student.bio}
+            </p>
+          </div>
+
+          {/* 2027 Farewell Statement */}
+          <div className="p-4 rounded-xl bg-gradient-to-r from-[#102047] to-[#0B1530] border border-[#C8A45D]/40">
+            <h3 className="text-xs uppercase tracking-wider text-[#C8A45D] font-semibold flex items-center gap-1.5 mb-1.5 font-cinzel">
+              <Sparkles className="w-3.5 h-3.5 text-[#C8A45D]" />
+              Personal Farewell 2027 Reflection
+            </h3>
+            <p className="text-sm text-[#F5F0E5] font-editorial italic leading-relaxed">
+              "{student.farewellNote2027}"
             </p>
           </div>
 

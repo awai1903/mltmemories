@@ -14,6 +14,8 @@ import { TimeCapsuleSection } from './components/TimeCapsuleSection';
 import { StoryAndFilmSection } from './components/StoryAndFilmSection';
 import { Footer } from './components/Footer';
 import { StudentModal } from './components/StudentModal';
+import { Countdown2027 } from './components/Countdown2027';
+import { FarewellWall } from './components/FarewellWall';
 import { Student } from './data/students';
 
 export default function App() {
@@ -39,14 +41,22 @@ export default function App() {
         {/* Signature Feature: Tilted 3D Rotating Photo Ring */}
         <PhotoRing3D onSelectStudent={(student) => setSelectedStudent(student)} />
 
+        {/* 2027 Convocation & Farewell Countdown Banner */}
+        <div id="countdown-2027">
+          <Countdown2027 />
+        </div>
+
         {/* Searchable 12 Boys Directory */}
         <DirectorySection onSelectStudent={(student) => setSelectedStudent(student)} />
 
         {/* Milestone Timeline: Our Journey */}
         <JourneySection />
 
-        {/* Visual Memory Wall */}
+        {/* Visual Memory Scrapbook & Gallery */}
         <MemoryWallSection />
+
+        {/* 2027 Farewell & Brotherhood Wall */}
+        <FarewellWall onSelectStudent={(student) => setSelectedStudent(student)} />
 
         {/* Future Time Capsule */}
         <TimeCapsuleSection />

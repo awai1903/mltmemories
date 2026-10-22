@@ -46,7 +46,7 @@ export const Hero: React.FC<HeroProps> = ({ onScrollToExplore }) => {
       <div className="relative z-10 pt-4 flex flex-col items-center">
         <div className="inline-flex items-center gap-2 px-3 py-1 text-xs tracking-widest uppercase font-semibold text-[#C8A45D] bg-[#0B1530]/80 rounded border border-[#C8A45D]/30 backdrop-blur-sm">
           <ShieldCheck className="w-3.5 h-3.5 text-[#C8A45D]" />
-          <span>FA23 · BS MLT</span>
+          <span>FA23 · BS MLT · CLASS OF 2027</span>
         </div>
       </div>
 

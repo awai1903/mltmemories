@@ -9,9 +9,10 @@ export const Footer: React.FC = () => {
   const navLinks = [
     { label: 'Home', href: '#hero' },
     { label: 'The Ring', href: '#the-ring' },
+    { label: '2027 Countdown', href: '#countdown-2027' },
     { label: 'The Boys', href: '#directory' },
-    { label: 'Our Journey', href: '#journey' },
-    { label: 'Memory Wall', href: '#memories' },
+    { label: 'Memories', href: '#memories' },
+    { label: 'Farewell 2027', href: '#farewell' },
     { label: 'Time Capsule', href: '#capsule' },
     { label: 'Our Story', href: '#story' },
   ];
