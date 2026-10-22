@@ -6,7 +6,7 @@
 import React, { useState } from 'react';
 import { Navigation } from './components/Navigation';
 import { Hero } from './components/Hero';
-import { PhotoRing3D } from './components/PhotoRing3D';
+import { LegacyBooklet } from './components/LegacyBooklet';
 import { DirectorySection } from './components/DirectorySection';
 import { JourneySection } from './components/JourneySection';
 import { MemoryWallSection } from './components/MemoryWallSection';
@@ -22,8 +22,8 @@ import { Student } from './data/students';
 function AppContent() {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
 
-  const scrollToRing = () => {
-    const el = document.getElementById('the-ring');
+  const scrollToBooklet = () => {
+    const el = document.getElementById('booklet');
     if (el) {
       el.scrollIntoView({ behavior: 'smooth' });
     }
@@ -32,15 +32,15 @@ function AppContent() {
   return (
     <div className="min-h-screen bg-[var(--bg-primary)] text-[#F8F5EE] flex flex-col font-sans selection:bg-[var(--accent-gold)]/30 selection:text-[var(--accent-champagne)] transition-colors duration-400">
       {/* Top 3-Zone Navigation */}
-      <Navigation onExploreClick={scrollToRing} />
+      <Navigation onExploreClick={scrollToBooklet} />
 
       {/* Main Content Sections */}
       <main className="flex-1">
         {/* Full-screen Hero Section */}
-        <Hero onScrollToExplore={scrollToRing} />
+        <Hero onScrollToExplore={scrollToBooklet} />
 
-        {/* Signature Feature: Tilted 3D Rotating Photo Ring with Pulsing Orbit & Atmospheric Space Glow */}
-        <PhotoRing3D onSelectStudent={(student) => setSelectedStudent(student)} />
+        {/* Signature Feature: Fully Responsive Interactive Batch Legacy Memory Booklet */}
+        <LegacyBooklet onSelectStudent={(student) => setSelectedStudent(student)} />
 
         {/* 2027 Convocation & Farewell Countdown Banner */}
         <div id="countdown-2027">

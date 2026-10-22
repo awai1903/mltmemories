@@ -8,7 +8,7 @@ export const Footer: React.FC = () => {
 
   const navLinks = [
     { label: 'Home', href: '#hero' },
-    { label: 'The Ring', href: '#the-ring' },
+    { label: 'The Booklet', href: '#booklet' },
     { label: '2027 Countdown', href: '#countdown-2027' },
     { label: 'The Boys', href: '#directory' },
     { label: 'Memories', href: '#memories' },

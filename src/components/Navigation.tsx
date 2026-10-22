@@ -13,7 +13,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onExploreClick }) => {
 
   const navLinks = [
     { label: 'Home', href: '#hero' },
-    { label: 'The Ring', href: '#the-ring' },
+    { label: 'The Booklet', href: '#booklet' },
     { label: '2027 Countdown', href: '#countdown-2027' },
     { label: 'The Boys', href: '#directory' },
     { label: 'Memories', href: '#memories' },
@@ -121,7 +121,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onExploreClick }) => {
             className="hidden sm:inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 text-xs font-semibold uppercase tracking-wider text-[#030713] bg-gradient-to-r from-[var(--accent-gold)] to-[var(--accent-champagne)] hover:brightness-110 rounded-lg shadow-md transition-all whitespace-nowrap shrink-0 focus:outline-none cursor-pointer"
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Enter Orbit</span>
+            <span>Open Booklet</span>
           </button>
 
           {/* Mobile Menu Toggle Button */}
@@ -189,7 +189,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onExploreClick }) => {
                 className="w-full py-2.5 text-xs font-semibold uppercase tracking-wider text-[#030713] bg-gradient-to-r from-[var(--accent-gold)] to-[var(--accent-champagne)] rounded-lg transition-all text-center flex items-center justify-center gap-2"
               >
                 <Sparkles className="w-4 h-4" />
-                <span>Enter Orbit</span>
+                <span>Open Booklet</span>
               </button>
             </div>
           </nav>

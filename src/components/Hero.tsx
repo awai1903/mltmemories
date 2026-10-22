@@ -90,7 +90,7 @@ export const Hero: React.FC<HeroProps> = ({ onScrollToExplore }) => {
             className="px-6 py-3 text-xs sm:text-sm font-semibold uppercase tracking-wider text-[#030713] bg-gradient-to-r from-[var(--accent-gold)] via-[var(--accent-champagne)] to-[var(--accent-gold)] hover:brightness-110 rounded-lg shadow-lg transition-all flex items-center gap-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent-gold)]"
           >
             <Compass className="w-4 h-4" />
-            <span>Enter The 3D Orbit</span>
+            <span>Open Batch Booklet</span>
           </button>
           
           <a
@@ -110,7 +110,7 @@ export const Hero: React.FC<HeroProps> = ({ onScrollToExplore }) => {
         <button
           onClick={onScrollToExplore}
           className="flex flex-col items-center gap-1 text-[11px] tracking-widest uppercase text-[#C8A45D]/80 hover:text-[#C8A45D] transition-colors mt-1 group cursor-pointer focus:outline-none"
-          aria-label="Scroll to explore 3D photo ring"
+          aria-label="Scroll to explore batch booklet"
         >
           <span>Scroll to Explore</span>
           <ChevronDown className="w-4 h-4 animate-bounce text-[#C8A45D] group-hover:translate-y-0.5 transition-transform" />
