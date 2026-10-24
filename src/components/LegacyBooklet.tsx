@@ -33,6 +33,9 @@ export const LegacyBooklet: React.FC<LegacyBookletProps> = ({ onSelectStudent })
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
 
+  const [flipDuration, setFlipDuration] = useState<number>(1400); // 1.4s slow, realistic 3D paper turn
+  const [speedMenuOpen, setSpeedMenuOpen] = useState<boolean>(false);
+
   // Desktop flip state
   const [flipState, setFlipState] = useState<{
     direction: 'next' | 'prev';
@@ -51,7 +54,7 @@ export const LegacyBooklet: React.FC<LegacyBookletProps> = ({ onSelectStudent })
   const audioContextRef = useRef<AudioContext | null>(null);
   const touchStartXRef = useRef<number | null>(null);
 
-  // Web Audio synthetic soft paper rustle sound
+  // Web Audio synthetic soft paper rustle sound matching slow turn
   const playPageTurnSound = () => {
     if (!soundEnabled) return;
     try {
@@ -68,13 +71,15 @@ export const LegacyBooklet: React.FC<LegacyBookletProps> = ({ onSelectStudent })
       }
 
       // Generate soft paper friction noise
-      const bufferSize = ctx.sampleRate * 0.14; // ~140ms
+      const duration = 0.5; // 500ms audio envelope
+      const bufferSize = Math.floor(ctx.sampleRate * duration);
       const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
       const data = buffer.getChannelData(0);
       for (let i = 0; i < bufferSize; i++) {
         const progress = i / bufferSize;
-        const envelope = Math.sin(progress * Math.PI) * (1 - progress * 0.5);
-        data[i] = (Math.random() * 2 - 1) * envelope * 0.12;
+        const liftWave = Math.sin(progress * Math.PI * 0.85) * Math.exp(-progress * 2.2);
+        const settleWave = progress > 0.55 ? Math.sin(((progress - 0.55) / 0.45) * Math.PI) * 0.35 : 0;
+        data[i] = (Math.random() * 2 - 1) * (liftWave * 0.12 + settleWave * 0.08);
       }
 
       const noise = ctx.createBufferSource();
@@ -82,12 +87,13 @@ export const LegacyBooklet: React.FC<LegacyBookletProps> = ({ onSelectStudent })
 
       const filter = ctx.createBiquadFilter();
       filter.type = 'bandpass';
-      filter.frequency.setValueAtTime(1400, ctx.currentTime);
-      filter.Q.setValueAtTime(1.2, ctx.currentTime);
+      filter.frequency.setValueAtTime(1200, ctx.currentTime);
+      filter.frequency.exponentialRampToValueAtTime(650, ctx.currentTime + duration);
+      filter.Q.setValueAtTime(1.4, ctx.currentTime);
 
       const gain = ctx.createGain();
-      gain.gain.setValueAtTime(0.08, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.14);
+      gain.gain.setValueAtTime(0.09, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
 
       noise.connect(filter);
       filter.connect(gain);
@@ -110,7 +116,7 @@ export const LegacyBooklet: React.FC<LegacyBookletProps> = ({ onSelectStudent })
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentSpread, flipState, mobilePage, mobileFlipState]);
+  }, [currentSpread, flipState, mobilePage, mobileFlipState, flipDuration]);
 
   const handleNext = () => {
     if (flipState || mobileFlipState) return;
@@ -134,7 +140,7 @@ export const LegacyBooklet: React.FC<LegacyBookletProps> = ({ onSelectStudent })
       setTimeout(() => {
         setMobilePage(nextPage);
         setMobileFlipState(null);
-      }, 650);
+      }, flipDuration);
     } else {
       if (currentSpread >= totalSpreads - 1) return;
       playPageTurnSound();
@@ -151,7 +157,7 @@ export const LegacyBooklet: React.FC<LegacyBookletProps> = ({ onSelectStudent })
       setTimeout(() => {
         setCurrentSpread(nextSpread);
         setFlipState(null);
-      }, 650);
+      }, flipDuration);
     }
   };
 
@@ -175,7 +181,7 @@ export const LegacyBooklet: React.FC<LegacyBookletProps> = ({ onSelectStudent })
       setTimeout(() => {
         setMobilePage(prevPage);
         setMobileFlipState(null);
-      }, 650);
+      }, flipDuration);
     } else {
       if (currentSpread <= 0) return;
       playPageTurnSound();
@@ -191,7 +197,7 @@ export const LegacyBooklet: React.FC<LegacyBookletProps> = ({ onSelectStudent })
       setTimeout(() => {
         setCurrentSpread(prevSpread);
         setFlipState(null);
-      }, 650);
+      }, flipDuration);
     }
   };
 
@@ -369,10 +375,16 @@ export const LegacyBooklet: React.FC<LegacyBookletProps> = ({ onSelectStudent })
             </div>
 
             <div className="my-auto flex flex-col items-center">
-              <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-full border-2 border-[#D4AF37] bg-[#030713]/80 flex flex-col items-center justify-center p-2 mb-3 sm:mb-4 shadow-2xl gold-box-glow">
-                <GraduationCap className="w-7 h-7 sm:w-8 sm:h-8 text-[#D4AF37] mb-1" />
-                <span className="text-[9px] sm:text-[10px] font-cinzel font-bold text-[#F8F5EE]">BS MLT</span>
-                <span className="text-[7px] sm:text-[8px] font-mono text-[#D4AF37]">FA23–2027</span>
+              <div className="relative w-20 h-20 sm:w-28 sm:h-28 rounded-full border-2 border-[#D4AF37] bg-[#030713] overflow-hidden mb-3 sm:mb-4 shadow-2xl gold-box-glow group">
+                <img
+                  src="/assets/images/must_mlt_logo_1792684746999.jpg"
+                  alt="MUST BS MLT Batch Crest"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).src = '/logo.png';
+                  }}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 rounded-full border border-[#D4AF37]/50 pointer-events-none" />
               </div>
 
               <h3 className="text-xl sm:text-3xl font-cinzel font-extrabold text-[#F8F5EE] tracking-wide leading-tight">
@@ -491,8 +503,18 @@ export const LegacyBooklet: React.FC<LegacyBookletProps> = ({ onSelectStudent })
             </div>
 
             <div className="my-auto flex flex-col items-center">
-              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border border-[#D4AF37] bg-[#030713] flex items-center justify-center text-sm font-cinzel text-[#D4AF37] mb-3 shadow-lg">
-                12
+              <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 border-[#D4AF37] bg-[#030713] overflow-hidden mb-3 shadow-xl gold-box-glow group">
+                <img
+                  src="/group-photo.jpg"
+                  alt="The 12 Brothers Group Photo"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).src = '/boys-photos/group.jpg';
+                  }}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                />
+                <div className="absolute bottom-0 inset-x-0 bg-[#070D1C]/85 text-[7px] sm:text-[8px] font-cinzel text-[#D4AF37] py-0.5 text-center font-bold">
+                  12 BROTHERS
+                </div>
               </div>
               <h3 className="text-lg sm:text-xl font-cinzel font-bold text-[#F8F5EE]">
                 BROTHERS FOR LIFE
@@ -532,9 +554,16 @@ export const LegacyBooklet: React.FC<LegacyBookletProps> = ({ onSelectStudent })
           </div>
 
           <div className="my-auto flex flex-col items-center py-4">
-            <div className="w-20 h-20 rounded-full border-2 border-[#D4AF37] bg-[#030713] flex flex-col items-center justify-center text-xs font-cinzel text-[#D4AF37] mb-3 shadow-xl gold-box-glow">
-              <GraduationCap className="w-6 h-6 text-[#D4AF37] mb-0.5" />
-              <span className="font-bold text-[10px] text-white">BS MLT</span>
+            <div className="relative w-20 h-20 rounded-full border-2 border-[#D4AF37] bg-[#030713] overflow-hidden mb-3 shadow-xl gold-box-glow group">
+              <img
+                src="/assets/images/must_mlt_logo_1792684746999.jpg"
+                alt="MUST BS MLT Crest"
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).src = '/logo.png';
+                }}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+              />
+              <div className="absolute inset-0 rounded-full border border-[#D4AF37]/40 pointer-events-none" />
             </div>
             <h3 className="text-2xl font-cinzel font-bold text-[#F8F5EE] tracking-wide">OUR LEGACY</h3>
             <div className="text-[11px] text-[#D4AF37] font-cinzel tracking-widest mt-1 uppercase">The 12 Brothers Yearbook</div>
@@ -577,7 +606,16 @@ export const LegacyBooklet: React.FC<LegacyBookletProps> = ({ onSelectStudent })
         </div>
 
         <div className="my-auto py-3 flex flex-col items-center">
-          <ShieldCheck className="w-8 h-8 text-[#8C6D2D] mb-2" />
+          <div className="relative w-16 h-16 rounded-full border-2 border-[#8C6D2D] bg-[#07132c] overflow-hidden mb-2 shadow-lg">
+            <img
+              src="/group-photo.jpg"
+              alt="MUST BS MLT All Brothers"
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).src = '/boys-photos/group.jpg';
+              }}
+              className="w-full h-full object-cover"
+            />
+          </div>
           <h4 className="text-lg font-cinzel font-bold text-[#0F1B38] mb-1.5">
             The Convocation Pledge
           </h4>
@@ -633,17 +671,30 @@ export const LegacyBooklet: React.FC<LegacyBookletProps> = ({ onSelectStudent })
       {/* Main 3D Booklet Stage */}
       <div className="relative z-10 w-full max-w-5xl mx-auto my-auto flex flex-col items-center perspective-book">
         {/* Physical Book Wrapper with Hardcover Edge Lip & Shadow */}
-        <div className="relative w-full aspect-[4/5] xs:aspect-[3/4] sm:aspect-[16/10] max-h-[560px] sm:max-h-[580px] rounded-2xl p-2 sm:p-3 bg-gradient-to-b from-[#182a4d] via-[#09152e] to-[#040c1e] border-2 border-[#C8A45D]/60 shadow-[0_30px_70px_-10px_rgba(0,0,0,0.9),0_0_50px_rgba(200,164,93,0.25)] flex overflow-visible">
-          {/* Stacked Paper Edges (Simulates 100+ physical pages) */}
-          <div className="hidden sm:block absolute -left-2 top-3 bottom-3 w-2.5 book-paper-edge-right rounded-l-sm shadow-md pointer-events-none opacity-85" />
-          <div className="absolute -right-2 top-3 bottom-3 w-2 sm:w-2.5 book-paper-edge-right rounded-r-sm shadow-md pointer-events-none opacity-85" />
-          <div className="absolute left-3 right-3 -bottom-2 h-2 sm:h-2.5 book-paper-edge-bottom rounded-b-sm shadow-md pointer-events-none opacity-85" />
+        <div
+          style={{ '--flip-duration': `${flipDuration}ms` } as React.CSSProperties}
+          className="relative w-full aspect-[4/5] xs:aspect-[3/4] sm:aspect-[16/10] max-h-[560px] sm:max-h-[590px] rounded-2xl p-2.5 sm:p-3.5 bg-gradient-to-b from-[#182a4d] via-[#09152e] to-[#040c1e] border-2 border-[#C8A45D]/70 shadow-[0_35px_80px_-15px_rgba(0,0,0,0.92),0_0_55px_rgba(200,164,93,0.3)] flex overflow-visible"
+        >
+          {/* Embossed Antique Golden Corner Protector Brackets */}
+          <div className="absolute top-1.5 left-1.5 w-6 h-6 border-t-2 border-l-2 border-[#D4AF37] rounded-tl pointer-events-none z-40 opacity-85" />
+          <div className="absolute top-1.5 right-1.5 w-6 h-6 border-t-2 border-r-2 border-[#D4AF37] rounded-tr pointer-events-none z-40 opacity-85" />
+          <div className="absolute bottom-1.5 left-1.5 w-6 h-6 border-b-2 border-l-2 border-[#D4AF37] rounded-bl pointer-events-none z-40 opacity-85" />
+          <div className="absolute bottom-1.5 right-1.5 w-6 h-6 border-b-2 border-r-2 border-[#D4AF37] rounded-br pointer-events-none z-40 opacity-85" />
+
+          {/* Spine Headband Cloth Trim at Top & Bottom Center */}
+          <div className="hidden sm:block absolute left-1/2 -top-1 -translate-x-1/2 w-8 h-2 rounded-t-sm bg-gradient-to-r from-[#D4AF37] via-[#8B2500] to-[#D4AF37] border-t border-[#D4AF37] shadow-md z-40 pointer-events-none" />
+          <div className="hidden sm:block absolute left-1/2 -bottom-1 -translate-x-1/2 w-8 h-2 rounded-b-sm bg-gradient-to-r from-[#D4AF37] via-[#8B2500] to-[#D4AF37] border-b border-[#D4AF37] shadow-md z-40 pointer-events-none" />
+
+          {/* Stacked Paper Edges (Simulates 200+ physical parchment pages) */}
+          <div className="hidden sm:block absolute -left-2.5 top-3 bottom-3 w-3 book-paper-edge-left rounded-l-sm shadow-md pointer-events-none opacity-90" />
+          <div className="absolute -right-2.5 top-3 bottom-3 w-2.5 sm:w-3 book-paper-edge-right rounded-r-sm shadow-md pointer-events-none opacity-90" />
+          <div className="absolute left-3 right-3 -bottom-2.5 h-2.5 sm:h-3 book-paper-edge-bottom rounded-b-sm shadow-md pointer-events-none opacity-90" />
 
           {/* Book Inner Spread Container */}
-          <div className="relative w-full h-full rounded-xl overflow-hidden bg-[#07132c] flex book-transform-3d">
+          <div className="relative w-full h-full rounded-xl overflow-hidden bg-[#07132c] flex book-transform-3d shadow-inner">
             {/* Center Book Spine Binding Fold / Crease Shadow (Desktop) */}
-            <div className="hidden sm:block absolute left-1/2 top-0 bottom-0 w-10 -translate-x-1/2 bg-gradient-to-r from-black/45 via-black/15 to-black/45 z-30 pointer-events-none shadow-inner" />
-            <div className="hidden sm:block absolute left-1/2 top-0 bottom-0 w-[1px] -translate-x-1/2 bg-[#C8A45D]/30 z-30 pointer-events-none" />
+            <div className="hidden sm:block absolute left-1/2 top-0 bottom-0 w-12 -translate-x-1/2 bg-gradient-to-r from-black/55 via-black/20 to-black/55 z-30 pointer-events-none shadow-inner" />
+            <div className="hidden sm:block absolute left-1/2 top-0 bottom-0 w-[1.5px] -translate-x-1/2 bg-[#C8A45D]/40 z-30 pointer-events-none" />
 
             {/* Golden Ribbon Bookmark */}
             <div className="absolute left-1/2 sm:left-1/2 -top-1 w-4 sm:w-5 h-12 sm:h-16 bg-gradient-to-b from-[#C8A45D] via-[#E7D39B] to-[#997930] -translate-x-1/2 z-40 rounded-b shadow-lg pointer-events-none">
@@ -662,6 +713,10 @@ export const LegacyBooklet: React.FC<LegacyBookletProps> = ({ onSelectStudent })
                   flipState && flipState.direction === 'prev' ? flipState.toSpread : currentSpread,
                   'left'
                 )}
+                {/* Dynamic cast shadow onto underlying left page */}
+                {flipState && flipState.direction === 'prev' && (
+                  <div className="absolute inset-0 bg-black/45 animate-cast-shadow-left pointer-events-none z-20" />
+                )}
               </div>
 
               {/* UNDERNEATH STATIONARY RIGHT PAGE */}
@@ -674,21 +729,27 @@ export const LegacyBooklet: React.FC<LegacyBookletProps> = ({ onSelectStudent })
                   flipState && flipState.direction === 'next' ? flipState.toSpread : currentSpread,
                   'right'
                 )}
+                {/* Dynamic cast shadow onto underlying right page */}
+                {flipState && flipState.direction === 'next' && (
+                  <div className="absolute inset-0 bg-black/45 animate-cast-shadow-right pointer-events-none z-20" />
+                )}
               </div>
 
               {/* DYNAMIC 3D FLIPPING LEAF (NEXT TURN) */}
               {flipState && flipState.direction === 'next' && (
                 <div className="absolute right-0 top-0 w-1/2 h-full z-40 animate-page-flip-next book-transform-3d pointer-events-none">
                   {/* Front Face: The outgoing right page */}
-                  <div className="absolute inset-0 w-full h-full book-face-front overflow-hidden">
+                  <div className="absolute inset-0 w-full h-full book-face-front overflow-hidden shadow-2xl">
                     {renderSpreadPage(flipState.fromSpread, 'right')}
-                    <div className="absolute inset-0 bg-gradient-to-l from-black/35 via-white/10 to-transparent pointer-events-none" />
+                    <div className="absolute inset-0 bg-gradient-to-l from-black/40 via-white/15 to-transparent pointer-events-none" />
+                    <div className="absolute top-0 bottom-0 left-0 w-8 bg-gradient-to-r from-black/50 to-transparent pointer-events-none" />
                   </div>
 
                   {/* Back Face: The incoming next left page */}
-                  <div className="absolute inset-0 w-full h-full book-face-back overflow-hidden">
+                  <div className="absolute inset-0 w-full h-full book-face-back overflow-hidden shadow-2xl">
                     {renderSpreadPage(flipState.toSpread, 'left')}
-                    <div className="absolute inset-0 bg-gradient-to-r from-black/35 via-white/10 to-transparent pointer-events-none" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-white/15 to-transparent pointer-events-none" />
+                    <div className="absolute top-0 bottom-0 right-0 w-8 bg-gradient-to-l from-black/50 to-transparent pointer-events-none" />
                   </div>
                 </div>
               )}
@@ -697,15 +758,17 @@ export const LegacyBooklet: React.FC<LegacyBookletProps> = ({ onSelectStudent })
               {flipState && flipState.direction === 'prev' && (
                 <div className="absolute left-0 top-0 w-1/2 h-full z-40 animate-page-flip-prev book-transform-3d pointer-events-none">
                   {/* Front Face: The incoming previous right page */}
-                  <div className="absolute inset-0 w-full h-full book-face-front overflow-hidden">
+                  <div className="absolute inset-0 w-full h-full book-face-front overflow-hidden shadow-2xl">
                     {renderSpreadPage(flipState.toSpread, 'right')}
-                    <div className="absolute inset-0 bg-gradient-to-l from-black/35 via-white/10 to-transparent pointer-events-none" />
+                    <div className="absolute inset-0 bg-gradient-to-l from-black/40 via-white/15 to-transparent pointer-events-none" />
+                    <div className="absolute top-0 bottom-0 left-0 w-8 bg-gradient-to-r from-black/50 to-transparent pointer-events-none" />
                   </div>
 
                   {/* Back Face: The outgoing left page */}
-                  <div className="absolute inset-0 w-full h-full book-face-back overflow-hidden">
+                  <div className="absolute inset-0 w-full h-full book-face-back overflow-hidden shadow-2xl">
                     {renderSpreadPage(flipState.fromSpread, 'left')}
-                    <div className="absolute inset-0 bg-gradient-to-r from-black/35 via-white/10 to-transparent pointer-events-none" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-white/15 to-transparent pointer-events-none" />
+                    <div className="absolute top-0 bottom-0 right-0 w-8 bg-gradient-to-l from-black/50 to-transparent pointer-events-none" />
                   </div>
                 </div>
               )}
@@ -731,21 +794,25 @@ export const LegacyBooklet: React.FC<LegacyBookletProps> = ({ onSelectStudent })
                 {renderSingleMobilePage(
                   mobileFlipState ? mobileFlipState.toPage : mobilePage
                 )}
+                {/* Dynamic cast shadow underneath mobile leaf */}
+                {mobileFlipState && (
+                  <div className="absolute inset-0 bg-black/40 animate-cast-shadow-right pointer-events-none z-20" />
+                )}
               </div>
 
               {/* DYNAMIC 3D MOBILE FLIPPING LEAF (NEXT TURN) */}
               {mobileFlipState && mobileFlipState.direction === 'next' && (
                 <div className="absolute inset-0 w-full h-full z-40 animate-page-flip-next book-transform-3d pointer-events-none">
                   {/* Front Face: The outgoing mobile page */}
-                  <div className="absolute inset-0 w-full h-full book-face-front overflow-hidden">
+                  <div className="absolute inset-0 w-full h-full book-face-front overflow-hidden shadow-2xl">
                     {renderSingleMobilePage(mobileFlipState.fromPage)}
-                    <div className="absolute inset-0 bg-gradient-to-l from-black/40 via-white/15 to-transparent pointer-events-none" />
+                    <div className="absolute inset-0 bg-gradient-to-l from-black/45 via-white/20 to-transparent pointer-events-none" />
                   </div>
 
                   {/* Back Face: The incoming next mobile page */}
-                  <div className="absolute inset-0 w-full h-full book-face-back overflow-hidden">
+                  <div className="absolute inset-0 w-full h-full book-face-back overflow-hidden shadow-2xl">
                     {renderSingleMobilePage(mobileFlipState.toPage)}
-                    <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-white/15 to-transparent pointer-events-none" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-black/45 via-white/20 to-transparent pointer-events-none" />
                   </div>
                 </div>
               )}
@@ -754,15 +821,15 @@ export const LegacyBooklet: React.FC<LegacyBookletProps> = ({ onSelectStudent })
               {mobileFlipState && mobileFlipState.direction === 'prev' && (
                 <div className="absolute inset-0 w-full h-full z-40 animate-page-flip-prev book-transform-3d pointer-events-none">
                   {/* Front Face: The incoming previous mobile page */}
-                  <div className="absolute inset-0 w-full h-full book-face-front overflow-hidden">
+                  <div className="absolute inset-0 w-full h-full book-face-front overflow-hidden shadow-2xl">
                     {renderSingleMobilePage(mobileFlipState.toPage)}
-                    <div className="absolute inset-0 bg-gradient-to-l from-black/40 via-white/15 to-transparent pointer-events-none" />
+                    <div className="absolute inset-0 bg-gradient-to-l from-black/45 via-white/20 to-transparent pointer-events-none" />
                   </div>
 
                   {/* Back Face: The outgoing mobile page */}
-                  <div className="absolute inset-0 w-full h-full book-face-back overflow-hidden">
+                  <div className="absolute inset-0 w-full h-full book-face-back overflow-hidden shadow-2xl">
                     {renderSingleMobilePage(mobileFlipState.fromPage)}
-                    <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-white/15 to-transparent pointer-events-none" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-black/45 via-white/20 to-transparent pointer-events-none" />
                   </div>
                 </div>
               )}
@@ -805,7 +872,53 @@ export const LegacyBooklet: React.FC<LegacyBookletProps> = ({ onSelectStudent })
           </div>
 
           {/* Quick Roster Jump Dropdown & Actions */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            {/* Flip Speed Control */}
+            <div className="relative">
+              <button
+                onClick={() => setSpeedMenuOpen(!speedMenuOpen)}
+                className="px-2 sm:px-2.5 py-1.5 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-gold)] text-[var(--accent-champagne)] hover:text-white flex items-center gap-1 text-xs font-mono cursor-pointer"
+                title="Page Flip Speed"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-[var(--accent-gold)]" />
+                <span className="hidden sm:inline">
+                  {flipDuration === 1400 ? 'Slow 1.4s' : flipDuration === 2000 ? 'Cinema 2.0s' : 'Brisk 0.8s'}
+                </span>
+              </button>
+
+              {speedMenuOpen && (
+                <div
+                  className="absolute right-0 bottom-full mb-2 w-44 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-gold)] p-1.5 shadow-2xl z-50 gold-box-glow"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="text-[10px] font-cinzel text-[var(--accent-gold)] uppercase tracking-wider px-2 py-1 border-b border-[var(--border-gold)]/30 mb-1">
+                    Flip Turning Speed
+                  </div>
+                  {[
+                    { label: 'Slow & Real (1.4s)', value: 1400 },
+                    { label: 'Cinematic (2.0s)', value: 2000 },
+                    { label: 'Brisk (0.8s)', value: 800 },
+                  ].map((opt) => (
+                    <button
+                      key={opt.value}
+                      onClick={() => {
+                        setFlipDuration(opt.value);
+                        setSpeedMenuOpen(false);
+                      }}
+                      className={`w-full text-left px-2 py-1.5 rounded text-xs transition-colors cursor-pointer flex items-center justify-between ${
+                        flipDuration === opt.value
+                          ? 'bg-[#C8A45D]/20 text-[#F5E5B8] font-bold'
+                          : 'text-[#E7D39B]/80 hover:bg-white/5'
+                      }`}
+                    >
+                      <span>{opt.label}</span>
+                      {flipDuration === opt.value && <span className="text-[#D4AF37]">✓</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {/* Audio Toggle */}
             <button
               onClick={() => setSoundEnabled(!soundEnabled)}

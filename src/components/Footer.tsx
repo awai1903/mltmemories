@@ -22,9 +22,13 @@ export const Footer: React.FC = () => {
       <div className="max-w-7xl mx-auto flex flex-col items-center justify-between gap-8 text-center sm:text-left sm:flex-row">
         {/* Brand Lockup */}
         <div className="flex flex-col items-center sm:items-start">
-          <div className="flex items-center gap-2.5 text-lg font-cinzel font-bold text-[#F5F0E5]">
-            <div className="w-7 h-7 rounded-full border border-[#C8A45D] bg-[#0B1530] flex items-center justify-center text-[10px] font-serif text-[#C8A45D]">
-              MUST
+          <div className="flex items-center gap-2.5 sm:gap-3 text-lg font-cinzel font-bold text-[#F5F0E5]">
+            <div className="w-8 h-8 rounded-full border border-[var(--accent-gold)]/80 bg-[var(--bg-secondary)] overflow-hidden flex items-center justify-center shadow-[0_0_14px_rgba(212,175,55,0.4)] shrink-0">
+              <img
+                src="/logo.png"
+                alt="MUST BS MLT Official Department Logo"
+                className="w-full h-full object-cover rounded-full"
+              />
             </div>
             <span>MUST · BS MLT BOYS</span>
           </div>

@@ -13,13 +13,14 @@ export const Navigation: React.FC<NavigationProps> = ({ onExploreClick }) => {
 
   const navLinks = [
     { label: 'Home', href: '#hero' },
+    { label: 'Picture Ring', href: '#portrait-ring' },
     { label: 'The Booklet', href: '#booklet' },
     { label: '2027 Countdown', href: '#countdown-2027' },
     { label: 'The Boys', href: '#directory' },
+    { label: 'Our Journey', href: '#journey' },
     { label: 'Memories', href: '#memories' },
     { label: 'Farewell 2027', href: '#farewell' },
     { label: 'Time Capsule', href: '#capsule' },
-    { label: 'Our Story', href: '#story' },
   ];
 
   const themeOptions: { id: ThemeMode; name: string; colorDot: string }[] = [

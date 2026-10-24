@@ -7,6 +7,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowUp } from 'lucide-react';
 import { Navigation } from './components/Navigation';
 import { Hero } from './components/Hero';
+import { PortraitOrbit } from './components/PortraitOrbit';
 import { LegacyBooklet } from './components/LegacyBooklet';
 import { DirectorySection } from './components/DirectorySection';
 import { JourneySection } from './components/JourneySection';
@@ -18,29 +19,40 @@ import { StudentModal } from './components/StudentModal';
 import { Countdown2027 } from './components/Countdown2027';
 import { FarewellWall } from './components/FarewellWall';
 import { ThemeProvider } from './context/ThemeContext';
-import { Student, BATCH_STUDENTS } from './data/students';
+import { Student } from './data/students';
+import { preloadAllAssets } from './utils/preloadAssets';
 
 function AppContent() {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [assetsReady, setAssetsReady] = useState(false);
 
   useEffect(() => {
-    // Preload all student photos and assets immediately into browser cache
-    const urlsToPreload = [
-      '/group-photo.jpg',
-      '/logo.png',
-      ...BATCH_STUDENTS.map((s) => s.photoUrl),
-    ];
-    urlsToPreload.forEach((url) => {
-      const img = new Image();
-      img.src = url;
+    let isMounted = true;
+
+    // Concurrently decode and load all batch imagery into GPU memory
+    preloadAllAssets().finally(() => {
+      if (isMounted) {
+        setAssetsReady(true);
+      }
     });
+
+    // Guard timer: reveal within 600ms maximum so user never waits
+    const timer = setTimeout(() => {
+      if (isMounted) {
+        setAssetsReady(true);
+      }
+    }, 600);
 
     const checkScroll = () => {
       setShowScrollTop(window.scrollY > 350);
     };
     window.addEventListener('scroll', checkScroll, { passive: true });
-    return () => window.removeEventListener('scroll', checkScroll);
+    return () => {
+      isMounted = false;
+      clearTimeout(timer);
+      window.removeEventListener('scroll', checkScroll);
+    };
   }, []);
 
   const handleScrollToTop = () => {
@@ -55,7 +67,11 @@ function AppContent() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--bg-primary)] text-[#F8F5EE] flex flex-col font-sans selection:bg-[var(--accent-gold)]/30 selection:text-[var(--accent-champagne)] transition-colors duration-400">
+    <div
+      className={`min-h-screen bg-[var(--bg-primary)] text-[#F8F5EE] flex flex-col font-sans selection:bg-[var(--accent-gold)]/30 selection:text-[var(--accent-champagne)] transition-opacity duration-500 ${
+        assetsReady ? 'opacity-100' : 'opacity-0'
+      }`}
+    >
       {/* Top 3-Zone Navigation */}
       <Navigation onExploreClick={scrollToBooklet} />
 
@@ -63,6 +79,9 @@ function AppContent() {
       <main className="flex-1">
         {/* Full-screen Hero Section */}
         <Hero onScrollToExplore={scrollToBooklet} />
+
+        {/* 3D Celestial Orbit Ring with all 12 brothers & interactive auto-rotation */}
+        <PortraitOrbit onSelectStudent={(student) => setSelectedStudent(student)} />
 
         {/* Signature Feature: Fully Responsive Interactive Batch Legacy Memory Booklet */}
         <LegacyBooklet onSelectStudent={(student) => setSelectedStudent(student)} />
