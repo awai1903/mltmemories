@@ -274,6 +274,7 @@ export const LegacyBooklet: React.FC<LegacyBookletProps> = ({ onSelectStudent })
         {/* Avatar Spot with Gold Foil Bezel - Lifted up with distinct clearance */}
         <div className="relative mt-0.5 sm:mt-1 mb-2.5 sm:mb-3 flex flex-col items-center group">
           <StudentAvatar
+            key={student.id}
             student={student}
             size="lg"
             className="ring-4 ring-[#C8A45D]/60 shadow-xl group-hover:scale-105 transition-transform"
@@ -714,7 +715,7 @@ export const LegacyBooklet: React.FC<LegacyBookletProps> = ({ onSelectStudent })
                   'left'
                 )}
                 {/* Dynamic cast shadow onto underlying left page */}
-                {flipState && flipState.direction === 'prev' && (
+                {flipState && flipState.direction === 'next' && (
                   <div className="absolute inset-0 bg-black/45 animate-cast-shadow-left pointer-events-none z-20" />
                 )}
               </div>
@@ -730,7 +731,7 @@ export const LegacyBooklet: React.FC<LegacyBookletProps> = ({ onSelectStudent })
                   'right'
                 )}
                 {/* Dynamic cast shadow onto underlying right page */}
-                {flipState && flipState.direction === 'next' && (
+                {flipState && flipState.direction === 'prev' && (
                   <div className="absolute inset-0 bg-black/45 animate-cast-shadow-right pointer-events-none z-20" />
                 )}
               </div>
@@ -757,18 +758,18 @@ export const LegacyBooklet: React.FC<LegacyBookletProps> = ({ onSelectStudent })
               {/* DYNAMIC 3D FLIPPING LEAF (PREV TURN) */}
               {flipState && flipState.direction === 'prev' && (
                 <div className="absolute left-0 top-0 w-1/2 h-full z-40 animate-page-flip-prev book-transform-3d pointer-events-none">
-                  {/* Front Face: The incoming previous right page */}
+                  {/* Front Face: The outgoing left page */}
                   <div className="absolute inset-0 w-full h-full book-face-front overflow-hidden shadow-2xl">
-                    {renderSpreadPage(flipState.toSpread, 'right')}
-                    <div className="absolute inset-0 bg-gradient-to-l from-black/40 via-white/15 to-transparent pointer-events-none" />
-                    <div className="absolute top-0 bottom-0 left-0 w-8 bg-gradient-to-r from-black/50 to-transparent pointer-events-none" />
-                  </div>
-
-                  {/* Back Face: The outgoing left page */}
-                  <div className="absolute inset-0 w-full h-full book-face-back overflow-hidden shadow-2xl">
                     {renderSpreadPage(flipState.fromSpread, 'left')}
                     <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-white/15 to-transparent pointer-events-none" />
                     <div className="absolute top-0 bottom-0 right-0 w-8 bg-gradient-to-l from-black/50 to-transparent pointer-events-none" />
+                  </div>
+
+                  {/* Back Face: The incoming previous right page */}
+                  <div className="absolute inset-0 w-full h-full book-face-back overflow-hidden shadow-2xl">
+                    {renderSpreadPage(flipState.toSpread, 'right')}
+                    <div className="absolute inset-0 bg-gradient-to-l from-black/40 via-white/15 to-transparent pointer-events-none" />
+                    <div className="absolute top-0 bottom-0 left-0 w-8 bg-gradient-to-r from-black/50 to-transparent pointer-events-none" />
                   </div>
                 </div>
               )}
@@ -820,16 +821,16 @@ export const LegacyBooklet: React.FC<LegacyBookletProps> = ({ onSelectStudent })
               {/* DYNAMIC 3D MOBILE FLIPPING LEAF (PREV TURN) */}
               {mobileFlipState && mobileFlipState.direction === 'prev' && (
                 <div className="absolute inset-0 w-full h-full z-40 animate-page-flip-prev book-transform-3d pointer-events-none">
-                  {/* Front Face: The incoming previous mobile page */}
+                  {/* Front Face: The outgoing mobile page */}
                   <div className="absolute inset-0 w-full h-full book-face-front overflow-hidden shadow-2xl">
-                    {renderSingleMobilePage(mobileFlipState.toPage)}
-                    <div className="absolute inset-0 bg-gradient-to-l from-black/45 via-white/20 to-transparent pointer-events-none" />
-                  </div>
-
-                  {/* Back Face: The outgoing mobile page */}
-                  <div className="absolute inset-0 w-full h-full book-face-back overflow-hidden shadow-2xl">
                     {renderSingleMobilePage(mobileFlipState.fromPage)}
                     <div className="absolute inset-0 bg-gradient-to-r from-black/45 via-white/20 to-transparent pointer-events-none" />
+                  </div>
+
+                  {/* Back Face: The incoming previous mobile page */}
+                  <div className="absolute inset-0 w-full h-full book-face-back overflow-hidden shadow-2xl">
+                    {renderSingleMobilePage(mobileFlipState.toPage)}
+                    <div className="absolute inset-0 bg-gradient-to-l from-black/45 via-white/20 to-transparent pointer-events-none" />
                   </div>
                 </div>
               )}

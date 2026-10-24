@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Student } from '../data/students';
 
 interface StudentAvatarProps {
@@ -14,6 +14,12 @@ export const StudentAvatar: React.FC<StudentAvatarProps> = ({
 }) => {
   const [imageError, setImageError] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
+
+  // Reset states whenever student or photoUrl changes so recycled component instances don't carry errors
+  useEffect(() => {
+    setImageError(false);
+    setImageLoaded(false);
+  }, [student.id, student.photoUrl]);
 
   const sizeClasses = {
     sm: 'w-10 h-10 text-xs',
@@ -33,8 +39,14 @@ export const StudentAvatar: React.FC<StudentAvatarProps> = ({
       <div className="absolute inset-0 bg-radial from-[#13234d] via-[#0B1530] to-[#070D1C] opacity-90 pointer-events-none" />
 
       {/* Attempt to load custom photo if available */}
-      {!imageError && (
+      {!imageError && Boolean(student.photoUrl) && (
         <img
+          key={student.photoUrl}
+          ref={(img) => {
+            if (img && img.complete && img.naturalWidth > 0 && !imageLoaded) {
+              setImageLoaded(true);
+            }
+          }}
           src={student.photoUrl}
           alt={student.name}
           loading="eager"
@@ -42,8 +54,8 @@ export const StudentAvatar: React.FC<StudentAvatarProps> = ({
           referrerPolicy="no-referrer"
           onError={() => setImageError(true)}
           onLoad={() => setImageLoaded(true)}
-          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-150 ${
-            imageLoaded ? 'opacity-100 z-10' : 'opacity-0'
+          className={`absolute inset-0 w-full h-full object-cover z-10 transition-opacity duration-200 ${
+            imageLoaded ? 'opacity-100' : 'opacity-95'
           }`}
         />
       )}

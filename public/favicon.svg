@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="100%" height="100%">
+  <defs>
+    <!-- Royal Gold Linear Gradients -->
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFF2CE" />
+      <stop offset="25%" stop-color="#E2C178" />
+      <stop offset="60%" stop-color="#C8A45D" />
+      <stop offset="100%" stop-color="#8E6725" />
+    </linearGradient>
+
+    <linearGradient id="goldLight" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#C8A45D" />
+      <stop offset="50%" stop-color="#FFF8E7" />
+      <stop offset="100%" stop-color="#E7D39B" />
+    </linearGradient>
+
+    <!-- Deep Navy Radial Background -->
+    <radialGradient id="bgGrad" cx="50%" cy="40%" r="65%">
+      <stop offset="0%" stop-color="#14234B" />
+      <stop offset="55%" stop-color="#0A1329" />
+      <stop offset="100%" stop-color="#040813" />
+    </radialGradient>
+
+    <!-- Subtle Gold Drop Shadow -->
+    <filter id="goldGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#C8A45D" flood-opacity="0.35" />
+    </filter>
+  </defs>
+
+  <!-- Background Medallion -->
+  <circle cx="64" cy="64" r="62" fill="url(#bgGrad)" stroke="url(#goldGrad)" stroke-width="3.5" />
+  <circle cx="64" cy="64" r="56" fill="none" stroke="url(#goldGrad)" stroke-width="1" stroke-opacity="0.6" stroke-dasharray="2 3" />
+
+  <!-- 12 Gold Dots on Perimeter Representing The 12 Brothers -->
+  <g fill="url(#goldLight)" opacity="0.95">
+    <!-- 12 points around circle (r=56, center=64,64) -->
+    <circle cx="64.00" cy="8.00" r="1.8" />
+    <circle cx="92.00" cy="15.50" r="1.8" />
+    <circle cx="112.50" cy="36.00" r="1.8" />
+    <circle cx="120.00" cy="64.00" r="1.8" />
+    <circle cx="112.50" cy="92.00" r="1.8" />
+    <circle cx="92.00" cy="112.50" r="1.8" />
+    <circle cx="64.00" cy="120.00" r="1.8" />
+    <circle cx="36.00" cy="112.50" r="1.8" />
+    <circle cx="15.50" cy="92.00" r="1.8" />
+    <circle cx="8.00" cy="64.00" r="1.8" />
+    <circle cx="15.50" cy="36.00" r="1.8" />
+    <circle cx="36.00" cy="15.50" r="1.8" />
+  </g>
+
+  <!-- Center Emblem: Stylized Microscope & Laurels -->
+  <g filter="url(#goldGlow)" fill="url(#goldGrad)">
+    <!-- Microscope Eyepiece -->
+    <path d="M50 24 L57 20 L61 27 L54 31 Z" />
+    <rect x="49" y="19" width="4" height="6" rx="1" transform="rotate(-30 49 19)" />
+
+    <!-- Body Tube & Nosepiece -->
+    <path d="M54 30 L67 52 L61 56 L48 34 Z" />
+    <path d="M64 48 L73 54 L69 60 L60 54 Z" />
+    <!-- Objective lens pointed to stage -->
+    <polygon points="63,57 66,59 62,65 59,63" />
+
+    <!-- Microscope Stage -->
+    <rect x="46" y="66" width="36" height="4.5" rx="1.5" />
+    <!-- Condenser / Light beam beneath stage -->
+    <path d="M60 70.5 L68 70.5 L66 75.5 L62 75.5 Z" opacity="0.9" />
+
+    <!-- Curved Microscope Arm (Robust C-shape) -->
+    <path d="M74 44 C84 48 88 58 87 70 C86 77 82 82 76 86 L76 79 C79 76 81 72 81 67 C81 59 78 52 70 49 Z" />
+
+    <!-- Stage Support Pillar & Base -->
+    <path d="M60 75.5 L68 75.5 L72 88 L56 88 Z" />
+    <path d="M42 90 C42 88 44 87 47 87 L81 87 C84 87 86 88 86 90 L88 95 C88 97 86 98 83 98 L45 98 C42 98 40 97 40 95 Z" />
+  </g>
+
+  <!-- MLT Text Banner at Bottom -->
+  <text x="64" y="110" font-family="'Cinzel', 'Times New Roman', serif" font-size="10.5" font-weight="800" fill="url(#goldLight)" letter-spacing="3" text-anchor="middle">MLT</text>
+
+  <!-- Subtle Top Sparkle Accent -->
+  <polygon points="64,28 65.5,33 70.5,34.5 65.5,36 64,41 62.5,36 57.5,34.5 62.5,33" fill="#FFFBE6" opacity="0.85" />
+</svg>

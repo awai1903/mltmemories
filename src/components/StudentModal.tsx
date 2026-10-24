@@ -53,7 +53,7 @@ export const StudentModal: React.FC<StudentModalProps> = ({ student, onClose }) 
 
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 pb-6 border-b border-[#C8A45D]/20">
-          <StudentAvatar student={student} size="xl" className="shrink-0 ring-4 ring-[#C8A45D]/20" />
+          <StudentAvatar key={student.id} student={student} size="xl" className="shrink-0 ring-4 ring-[#C8A45D]/20" />
           
           <div className="text-center sm:text-left flex-1">
             <div className="text-xs tracking-widest uppercase font-semibold text-[#C8A45D] mb-1">
